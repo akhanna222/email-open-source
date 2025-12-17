@@ -1,4 +1,27 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18000';
+// Dynamic API URL that works both locally and on EC2
+const getApiBaseUrl = () => {
+  // If explicitly set via env var, use that
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In browser, use the same host as the UI but port 18000
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    return `${protocol}//${hostname}:18000`;
+  }
+
+  // Fallback for SSR
+  return 'http://localhost:18000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Log API URL for debugging
+if (typeof window !== 'undefined') {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
 
 export interface NodeSchema {
   type: string;
