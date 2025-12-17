@@ -1,0 +1,25 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/set_fields.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Set / Edit Fields Node Config",
+  "type": "object",
+  "required": ["operations"],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op", "path"],
+        "properties": {
+          "op": { "type": "string", "enum": ["set", "rename", "drop"] },
+          "path": { "type": "string", "minLength": 1 },
+          "value": { "type": ["string", "number", "boolean", "object", "array", "null"] }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/switch.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Switch Node Config",
+  "type": "object",
+  "required": ["expression", "cases"],
+  "properties": {
+    "expression": { "type": "string", "minLength": 1 },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "match"],
+        "properties": {
+          "label": { "type": "string" },
+          "match": { "type": ["string", "number", "boolean"] }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "default_label": { "type": "string", "default": "default" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

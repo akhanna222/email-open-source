@@ -1,0 +1,14 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/error_handler.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Error Handler Node Config",
+  "type": "object",
+  "required": ["strategy"],
+  "properties": {
+    "strategy": { "type": "string", "enum": ["retry", "notify", "fail"] },
+    "max_attempts": { "type": "integer", "minimum": 1, "maximum": 10, "default": 3 },
+    "notification_channel": { "type": "string" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

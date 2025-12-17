@@ -1,0 +1,19 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/ai_agent.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Agent Config",
+  "type": "object",
+  "required": ["instructions", "tools"],
+  "properties": {
+    "instructions": { "type": "string", "minLength": 1 },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 0
+    },
+    "max_turns": { "type": "integer", "minimum": 1, "maximum": 20, "default": 8 },
+    "memory_key": { "type": "string" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/manual_trigger.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Manual Trigger Config",
+  "type": "object",
+  "required": ["payload"],
+  "properties": {
+    "payload": {
+      "type": "object",
+      "description": "Initial payload provided by the user."
+    },
+    "x-ui": {
+      "type": "object",
+      "properties": {
+        "order": { "type": "array", "items": { "type": "string" } },
+        "widgets": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

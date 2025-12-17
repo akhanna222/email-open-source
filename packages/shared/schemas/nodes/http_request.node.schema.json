@@ -1,0 +1,16 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/http_request.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HTTP Request Node Config",
+  "type": "object",
+  "required": ["method", "url"],
+  "properties": {
+    "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+    "url": { "type": "string", "format": "uri" },
+    "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+    "body": { "type": ["object", "string", "null"] },
+    "timeout_seconds": { "type": "integer", "minimum": 1, "maximum": 120, "default": 30 },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

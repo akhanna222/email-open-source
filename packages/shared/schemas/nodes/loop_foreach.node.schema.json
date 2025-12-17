@@ -1,0 +1,14 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/loop_foreach.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Loop / ForEach Node Config",
+  "type": "object",
+  "required": ["items_path"],
+  "properties": {
+    "items_path": { "type": "string", "minLength": 1 },
+    "max_iterations": { "type": "integer", "minimum": 1, "maximum": 500, "default": 50 },
+    "parallel": { "type": "boolean", "default": false },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}
