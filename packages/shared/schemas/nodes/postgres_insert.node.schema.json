@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "PostgreSQL connection string",
+      "format": "uri",
+      "default": "postgresql://user:password@localhost:5432/dbname"
+    },
+    "table": {
+      "type": "string",
+      "description": "Table name to insert into"
+    },
+    "columns": {
+      "type": "array",
+      "description": "Column names",
+      "items": {
+        "type": "string"
+      }
+    },
+    "on_conflict": {
+      "type": "string",
+      "enum": ["error", "ignore", "update"],
+      "default": "error",
+      "description": "Action on constraint violation"
+    }
+  },
+  "required": ["connection_string", "table"]
+}

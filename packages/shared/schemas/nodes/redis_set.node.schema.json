@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "Redis connection string",
+      "default": "redis://localhost:6379"
+    },
+    "key": {
+      "type": "string",
+      "description": "Redis key to set"
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Time to live in seconds (0 = no expiration)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["set", "setnx", "setex"],
+      "default": "set",
+      "description": "Set operation mode"
+    }
+  },
+  "required": ["connection_string", "key"]
+}

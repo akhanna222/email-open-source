@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "model": {
+      "type": "string",
+      "enum": ["deepseek-chat", "deepseek-coder"],
+      "default": "deepseek-chat",
+      "description": "DeepSeek model to use"
+    },
+    "api_key": {
+      "type": "string",
+      "description": "DeepSeek API key",
+      "format": "password"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2,
+      "default": 0.7,
+      "description": "Sampling temperature"
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4096,
+      "default": 1024,
+      "description": "Maximum tokens in response"
+    }
+  },
+  "required": ["api_key"]
+}

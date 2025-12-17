@@ -1,0 +1,144 @@
+{
+  "id": "sample-email-scanning",
+  "name": "Intelligent Email Scanning & Classification",
+  "description": "Scan incoming emails, use LLM to classify urgency and intent, filter by keywords, and route to appropriate actions",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "trigger",
+      "position": { "x": 250, "y": 50 },
+      "data": {
+        "label": "Gmail Inbox",
+        "nodeType": "gmail_trigger_stub",
+        "description": "Trigger on new email received",
+        "inputs": [],
+        "outputs": ["message"]
+      }
+    },
+    {
+      "id": "2",
+      "type": "utility",
+      "position": { "x": 250, "y": 180 },
+      "data": {
+        "label": "Extract Email Data",
+        "nodeType": "set_fields",
+        "description": "Parse subject, body, sender, attachments",
+        "inputs": ["message"],
+        "outputs": ["email_data"]
+      }
+    },
+    {
+      "id": "3",
+      "type": "ai",
+      "position": { "x": 250, "y": 310 },
+      "data": {
+        "label": "LLM Classification",
+        "nodeType": "claude_chat",
+        "description": "Classify email: urgent, spam, inquiry, order, complaint",
+        "inputs": ["email_data", "context"],
+        "outputs": ["classification", "confidence"]
+      }
+    },
+    {
+      "id": "4",
+      "type": "control",
+      "position": { "x": 250, "y": 440 },
+      "data": {
+        "label": "Is Urgent?",
+        "nodeType": "if",
+        "description": "Check if email is marked as urgent",
+        "inputs": ["classification"],
+        "outputs": ["true", "false"]
+      }
+    },
+    {
+      "id": "5",
+      "type": "messaging",
+      "position": { "x": 100, "y": 570 },
+      "data": {
+        "label": "Alert Team (Urgent)",
+        "nodeType": "send_telegram_stub",
+        "description": "Send urgent alert to team via Telegram",
+        "inputs": ["email_data"],
+        "outputs": ["message_sent"]
+      }
+    },
+    {
+      "id": "6",
+      "type": "control",
+      "position": { "x": 400, "y": 570 },
+      "data": {
+        "label": "Check Keywords",
+        "nodeType": "switch",
+        "description": "Route by keywords: invoice, support, sales, general",
+        "inputs": ["email_data"],
+        "outputs": ["branches"]
+      }
+    },
+    {
+      "id": "7",
+      "type": "database",
+      "position": { "x": 250, "y": 700 },
+      "data": {
+        "label": "Store in Database",
+        "nodeType": "postgres_insert",
+        "description": "Log email for tracking and analytics",
+        "inputs": ["email_data", "classification"],
+        "outputs": ["inserted_id", "success"]
+      }
+    },
+    {
+      "id": "8",
+      "type": "ai",
+      "position": { "x": 550, "y": 700 },
+      "data": {
+        "label": "Generate Auto-Reply",
+        "nodeType": "openai_chat",
+        "description": "Create contextual auto-reply based on email content",
+        "inputs": ["email_data", "classification"],
+        "outputs": ["reply_text"]
+      }
+    },
+    {
+      "id": "9",
+      "type": "messaging",
+      "position": { "x": 550, "y": 830 },
+      "data": {
+        "label": "Send Gmail Reply",
+        "nodeType": "send_gmail_stub",
+        "description": "Send auto-reply to sender",
+        "inputs": ["reply_text"],
+        "outputs": ["message_sent"]
+      }
+    },
+    {
+      "id": "10",
+      "type": "database",
+      "position": { "x": 100, "y": 830 },
+      "data": {
+        "label": "Vector Store Email",
+        "nodeType": "postgres_vector_store",
+        "description": "Store email embedding for semantic search",
+        "inputs": ["email_data", "embedding", "metadata"],
+        "outputs": ["vector_id", "success"]
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1-2", "source": "1", "target": "2", "animated": true },
+    { "id": "e2-3", "source": "2", "target": "3", "animated": true },
+    { "id": "e3-4", "source": "3", "target": "4", "animated": true },
+    { "id": "e4-5", "source": "4", "target": "5", "sourceHandle": "true", "animated": true, "label": "URGENT" },
+    { "id": "e4-6", "source": "4", "target": "6", "sourceHandle": "false", "animated": true, "label": "NORMAL" },
+    { "id": "e5-7", "source": "5", "target": "7", "animated": true },
+    { "id": "e6-7", "source": "6", "target": "7", "animated": true },
+    { "id": "e6-8", "source": "6", "target": "8", "animated": true },
+    { "id": "e8-9", "source": "8", "target": "9", "animated": true },
+    { "id": "e7-10", "source": "7", "target": "10", "animated": true }
+  ],
+  "metadata": {
+    "tags": ["email", "gmail", "llm-classification", "auto-reply", "keyword-filtering"],
+    "use_case": "Email Automation",
+    "complexity": "advanced"
+  }
+}

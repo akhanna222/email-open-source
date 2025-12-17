@@ -1,0 +1,117 @@
+{
+  "id": "sample-ocr-workflow",
+  "name": "OCR Document Processing from WhatsApp",
+  "description": "Extract text from documents received via WhatsApp, analyze with LLM, and store in vector database for semantic search",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "trigger",
+      "position": { "x": 250, "y": 50 },
+      "data": {
+        "label": "WhatsApp Document",
+        "nodeType": "whatsapp_trigger_stub",
+        "description": "Trigger when document received via WhatsApp",
+        "inputs": [],
+        "outputs": ["message"]
+      }
+    },
+    {
+      "id": "2",
+      "type": "utility",
+      "position": { "x": 250, "y": 180 },
+      "data": {
+        "label": "Extract Attachment",
+        "nodeType": "transform_js",
+        "description": "Extract document attachment from WhatsApp message",
+        "inputs": ["message"],
+        "outputs": ["document"]
+      }
+    },
+    {
+      "id": "3",
+      "type": "utility",
+      "position": { "x": 250, "y": 310 },
+      "data": {
+        "label": "OCR Processing",
+        "nodeType": "http_request",
+        "description": "Call OCR API to extract text from document",
+        "inputs": ["document"],
+        "outputs": ["extracted_text"]
+      }
+    },
+    {
+      "id": "4",
+      "type": "ai",
+      "position": { "x": 250, "y": 440 },
+      "data": {
+        "label": "Analyze Document",
+        "nodeType": "openai_chat",
+        "description": "Use LLM to analyze and categorize document content",
+        "inputs": ["extracted_text", "context"],
+        "outputs": ["analysis", "tokens_used"]
+      }
+    },
+    {
+      "id": "5",
+      "type": "ai",
+      "position": { "x": 100, "y": 570 },
+      "data": {
+        "label": "Generate Embedding",
+        "nodeType": "openai_chat",
+        "description": "Create vector embedding for semantic search",
+        "inputs": ["extracted_text"],
+        "outputs": ["embedding"]
+      }
+    },
+    {
+      "id": "6",
+      "type": "database",
+      "position": { "x": 100, "y": 700 },
+      "data": {
+        "label": "Store in Vector DB",
+        "nodeType": "postgres_vector_store",
+        "description": "Store document text and embedding in pgvector",
+        "inputs": ["extracted_text", "embedding", "metadata"],
+        "outputs": ["vector_id", "success"]
+      }
+    },
+    {
+      "id": "7",
+      "type": "ai",
+      "position": { "x": 400, "y": 570 },
+      "data": {
+        "label": "Generate Summary",
+        "nodeType": "prompt_template",
+        "description": "Create user-friendly summary of document",
+        "inputs": ["analysis"],
+        "outputs": ["summary"]
+      }
+    },
+    {
+      "id": "8",
+      "type": "messaging",
+      "position": { "x": 400, "y": 700 },
+      "data": {
+        "label": "Send WhatsApp Reply",
+        "nodeType": "send_whatsapp_stub",
+        "description": "Send analysis summary back to user",
+        "inputs": ["summary"],
+        "outputs": ["message_sent"]
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1-2", "source": "1", "target": "2", "animated": true },
+    { "id": "e2-3", "source": "2", "target": "3", "animated": true },
+    { "id": "e3-4", "source": "3", "target": "4", "animated": true },
+    { "id": "e4-5", "source": "4", "target": "5", "animated": true },
+    { "id": "e5-6", "source": "5", "target": "6", "animated": true },
+    { "id": "e4-7", "source": "4", "target": "7", "animated": true },
+    { "id": "e7-8", "source": "7", "target": "8", "animated": true }
+  ],
+  "metadata": {
+    "tags": ["ocr", "whatsapp", "document-processing", "vector-db"],
+    "use_case": "Document OCR and Analysis",
+    "complexity": "intermediate"
+  }
+}

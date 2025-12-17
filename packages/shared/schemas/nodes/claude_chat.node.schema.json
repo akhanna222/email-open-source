@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "model": {
+      "type": "string",
+      "enum": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+      "default": "claude-3-5-sonnet-20241022",
+      "description": "Claude model to use"
+    },
+    "api_key": {
+      "type": "string",
+      "description": "Anthropic API key",
+      "format": "password"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.7,
+      "description": "Sampling temperature"
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4096,
+      "default": 1024,
+      "description": "Maximum tokens in response"
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "System prompt to guide behavior"
+    }
+  },
+  "required": ["api_key"]
+}
