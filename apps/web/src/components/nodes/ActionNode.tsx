@@ -1,19 +1,39 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { Play } from 'lucide-react';
+import { Play, Database, Zap, Code } from 'lucide-react';
+
+const getIcon = (nodeType: string) => {
+  if (nodeType?.includes('database')) return Database;
+  if (nodeType?.includes('code') || nodeType?.includes('transform')) return Code;
+  if (nodeType?.includes('http')) return Zap;
+  return Play;
+};
 
 export default function ActionNode({ data }: any) {
+  const Icon = getIcon(data.nodeType);
+
   return (
-    <div className="px-4 py-3 shadow-lg rounded-lg bg-white border-2 border-green-500 min-w-[180px]">
-      <Handle type="target" position={Position.Top} className="!bg-green-500" />
-      <div className="flex items-center gap-2">
-        <Play className="text-green-500" size={20} />
-        <div>
-          <div className="text-xs text-gray-500">Action</div>
-          <div className="font-semibold">{data.label}</div>
+    <div className="group">
+      <Handle type="target" position={Position.Top} className="!bg-emerald-500 !w-3 !h-3" />
+      <div className="px-5 py-4 shadow-xl rounded-xl bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-400 min-w-[200px] hover:shadow-2xl hover:scale-105 transition-all duration-200">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-100 rounded-lg">
+            <Icon className="text-emerald-600" size={22} />
+          </div>
+          <div className="flex-1">
+            <div className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">
+              Action
+            </div>
+            <div className="font-bold text-gray-800 text-sm mt-0.5">{data.label}</div>
+            {data.description && (
+              <div className="text-[11px] text-gray-500 mt-1 line-clamp-1">
+                {data.description}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} className="!bg-green-500" />
+      <Handle type="source" position={Position.Bottom} className="!bg-emerald-500 !w-3 !h-3" />
     </div>
   );
 }

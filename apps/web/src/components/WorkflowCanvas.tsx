@@ -13,6 +13,7 @@ import { useWorkflowStore } from '../store/workflowStore';
 import TriggerNode from './nodes/TriggerNode';
 import ActionNode from './nodes/ActionNode';
 import ConditionNode from './nodes/ConditionNode';
+import MessagingNode from './nodes/MessagingNode';
 
 // Store React Flow functions globally for Zustand
 if (typeof window !== 'undefined') {
@@ -23,6 +24,7 @@ const nodeTypes = {
   trigger: TriggerNode,
   action: ActionNode,
   condition: ConditionNode,
+  messaging: MessagingNode,
 };
 
 export default function WorkflowCanvas() {

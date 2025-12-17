@@ -16,9 +16,10 @@ const getIcon = (category: string) => {
 const getColor = (category: string) => {
   switch (category) {
     case 'trigger': return 'blue';
-    case 'messaging': return 'green';
-    case 'condition': return 'purple';
-    default: return 'green';
+    case 'messaging': return 'purple';
+    case 'condition': return 'amber';
+    case 'action': return 'emerald';
+    default: return 'emerald';
   }
 };
 
