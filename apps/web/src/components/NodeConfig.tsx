@@ -1,9 +1,120 @@
-import React from 'react';
-import { X, Settings, Tag, ArrowRight, ArrowLeft, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Settings, Tag, ArrowRight, ArrowLeft, Trash2, ChevronDown, ChevronRight, Key } from 'lucide-react';
 import { useWorkflowStore } from '../store/workflowStore';
+
+// Component to render a single parameter field based on JSON schema
+function ParameterField({
+  name,
+  schema,
+  value,
+  onChange,
+  required
+}: {
+  name: string;
+  schema: any;
+  value: any;
+  onChange: (value: any) => void;
+  required: boolean;
+}) {
+  const isPassword = schema.format === 'password';
+  const isEnum = schema.enum && Array.isArray(schema.enum);
+  const isNumber = schema.type === 'number' || schema.type === 'integer';
+  const isBoolean = schema.type === 'boolean';
+  const isTextarea = schema.type === 'string' && !isEnum && !isPassword;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    let newValue: any = e.target.value;
+
+    if (isNumber) {
+      newValue = schema.type === 'integer' ? parseInt(newValue) : parseFloat(newValue);
+      if (isNaN(newValue)) newValue = schema.default || 0;
+    } else if (isBoolean) {
+      newValue = (e.target as HTMLInputElement).checked;
+    }
+
+    onChange(newValue);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+        <span className="capitalize">{name.replace(/_/g, ' ')}</span>
+        {required && <span className="text-red-500">*</span>}
+      </label>
+
+      {schema.description && (
+        <p className="text-xs text-gray-500">{schema.description}</p>
+      )}
+
+      {isEnum ? (
+        <select
+          value={value || schema.default || ''}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
+        >
+          <option value="">Select {name}</option>
+          {schema.enum.map((option: string) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      ) : isBoolean ? (
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value || false}
+            onChange={handleChange}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-600">Enable</span>
+        </label>
+      ) : isNumber ? (
+        <input
+          type="number"
+          value={value !== undefined ? value : schema.default || ''}
+          onChange={handleChange}
+          min={schema.minimum}
+          max={schema.maximum}
+          step={schema.type === 'integer' ? 1 : 0.1}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm font-mono"
+        />
+      ) : isPassword ? (
+        <input
+          type="password"
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={`Enter ${name}`}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm font-mono"
+        />
+      ) : isTextarea && name.toLowerCase().includes('prompt') ? (
+        <textarea
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={`Enter ${name}`}
+          rows={3}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm resize-y"
+        />
+      ) : (
+        <input
+          type="text"
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={`Enter ${name}`}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all text-sm"
+        />
+      )}
+
+      {isNumber && (schema.minimum !== undefined || schema.maximum !== undefined) && (
+        <p className="text-xs text-gray-400">
+          Range: {schema.minimum ?? '∞'} - {schema.maximum ?? '∞'}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function NodeConfig() {
   const { selectedNode, updateNode, deleteNode, setSelectedNode } = useWorkflowStore();
+  const [showParameters, setShowParameters] = useState(true);
 
   if (!selectedNode) {
     return (
@@ -28,6 +139,20 @@ export default function NodeConfig() {
       updateNode(selectedNode.id, {
         ...selectedNode,
         data: { ...selectedNode.data, label: e.target.value },
+      });
+    }
+  };
+
+  const handleParameterChange = (paramName: string, value: any) => {
+    if (selectedNode) {
+      const updatedParameters = {
+        ...(selectedNode.data.parameters || {}),
+        [paramName]: value,
+      };
+
+      updateNode(selectedNode.id, {
+        ...selectedNode,
+        data: { ...selectedNode.data, parameters: updatedParameters },
       });
     }
   };
@@ -58,6 +183,9 @@ export default function NodeConfig() {
     // Delete the node
     deleteNode(selectedNode.id);
   };
+
+  const hasParameters = selectedNode.data.schema?.properties && Object.keys(selectedNode.data.schema.properties).length > 0;
+  const requiredFields = selectedNode.data.schema?.required || [];
 
   return (
     <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full shadow-sm">
@@ -105,6 +233,37 @@ export default function NodeConfig() {
             placeholder="Enter node label..."
           />
         </div>
+
+        {/* Parameters Section - NEW! */}
+        {hasParameters && (
+          <div className="bg-gradient-to-br from-orange-50 to-white p-4 rounded-xl border-2 border-orange-200">
+            <button
+              onClick={() => setShowParameters(!showParameters)}
+              className="w-full flex items-center justify-between text-sm font-semibold text-orange-700 mb-3 cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <Key size={16} />
+                Configuration Parameters
+              </span>
+              {showParameters ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+
+            {showParameters && (
+              <div className="space-y-4 mt-4">
+                {Object.entries(selectedNode.data.schema.properties).map(([paramName, paramSchema]: [string, any]) => (
+                  <ParameterField
+                    key={paramName}
+                    name={paramName}
+                    schema={paramSchema}
+                    value={selectedNode.data.parameters?.[paramName]}
+                    onChange={(value) => handleParameterChange(paramName, value)}
+                    required={requiredFields.includes(paramName)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Inputs Section */}
         {selectedNode.data.inputs && selectedNode.data.inputs.length > 0 && (
