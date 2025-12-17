@@ -89,16 +89,16 @@ main() {
   ${COMPOSE_CMD} up -d --build
 
   log "waiting for API health"
-  wait_for_health "http://localhost:8083/health"
+  wait_for_health "http://localhost:18000/health"
 
   log "running tests inside api service"
   ${COMPOSE_CMD} run --rm api pytest
 
   log "all done"
-  log "API:    http://localhost:8083/health"
-  log "Web:    http://localhost:3001"
-  log "Postgres: localhost:5433"
-  log "Redis:    localhost:6380"
+  log "API:    http://localhost:18000/health"
+  log "Web:    http://localhost:13000"
+  log "Postgres: localhost:15432"
+  log "Redis:    localhost:16379"
 }
 
 main "$@"

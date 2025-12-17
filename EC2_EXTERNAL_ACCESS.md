@@ -6,12 +6,12 @@
 
 Add inbound rules to allow traffic on these ports:
 
-| Port | Service  | Protocol | Source          | Description                    |
-|------|----------|----------|-----------------|--------------------------------|
-| 3001 | Web UI   | TCP      | 0.0.0.0/0       | Public web interface           |
-| 8083 | API      | TCP      | 0.0.0.0/0       | Public API access              |
-| 5433 | Postgres | TCP      | Your IP only    | Database (secure access only)  |
-| 6380 | Redis    | TCP      | Your IP only    | Cache (secure access only)     |
+| Port  | Service  | Protocol | Source          | Description                    |
+|-------|----------|----------|-----------------|--------------------------------|
+| 13000 | Web UI   | TCP      | 0.0.0.0/0       | Public web interface           |
+| 18000 | API      | TCP      | 0.0.0.0/0       | Public API access              |
+| 15432 | Postgres | TCP      | Your IP only    | Database (secure access only)  |
+| 16379 | Redis    | TCP      | Your IP only    | Cache (secure access only)     |
 
 **AWS Console Steps:**
 1. Go to EC2 → Instances → Select your instance
@@ -19,13 +19,13 @@ Add inbound rules to allow traffic on these ports:
 3. Inbound rules → Edit inbound rules → Add rules:
    ```
    Type: Custom TCP
-   Port: 3001
+   Port: 13000
    Source: 0.0.0.0/0 (or your IP range)
    Description: Web UI
    ```
    ```
    Type: Custom TCP
-   Port: 8083
+   Port: 18000
    Source: 0.0.0.0/0 (or your IP range)
    Description: API
    ```
@@ -45,17 +45,17 @@ curl ifconfig.me
 
 Replace `YOUR_EC2_IP` with your actual public IP:
 
-- **Web UI**: `http://YOUR_EC2_IP:3001`
-- **API**: `http://YOUR_EC2_IP:8083/health`
-- **API Docs**: `http://YOUR_EC2_IP:8083/docs`
+- **Web UI**: `http://YOUR_EC2_IP:13000`
+- **API**: `http://YOUR_EC2_IP:18000/health`
+- **API Docs**: `http://YOUR_EC2_IP:18000/docs`
 
 Example:
 ```bash
 # Test API from your local machine
-curl http://54.123.456.789:8083/health
+curl http://54.123.456.789:18000/health
 
 # Open browser to:
-http://54.123.456.789:3001
+http://54.123.456.789:13000
 ```
 
 ### 4. Configure CORS for API (if needed)
@@ -84,8 +84,8 @@ Instead of using IP addresses, set up a domain:
 
 1. **Get a domain** (e.g., from Route 53, GoDaddy, etc.)
 2. **Create DNS A records**:
-   - `app.yourdomain.com` → EC2 IP (for web UI on port 3001)
-   - `api.yourdomain.com` → EC2 IP (for API on port 8083)
+   - `app.yourdomain.com` → EC2 IP (for web UI on port 13000)
+   - `api.yourdomain.com` → EC2 IP (for API on port 18000)
 
 3. **Use reverse proxy** (recommended for production):
 
@@ -127,10 +127,10 @@ Create `test-external-access.sh`:
 EC2_IP="YOUR_EC2_IP"
 
 echo "Testing API..."
-curl -s "http://${EC2_IP}:8083/health" && echo "✓ API accessible" || echo "✗ API not accessible"
+curl -s "http://${EC2_IP}:18000/health" && echo "✓ API accessible" || echo "✗ API not accessible"
 
 echo "Testing Web..."
-curl -s "http://${EC2_IP}:3001" > /dev/null && echo "✓ Web accessible" || echo "✗ Web not accessible"
+curl -s "http://${EC2_IP}:13000" > /dev/null && echo "✓ Web accessible" || echo "✗ Web not accessible"
 ```
 
 ### Troubleshooting
@@ -138,8 +138,8 @@ curl -s "http://${EC2_IP}:3001" > /dev/null && echo "✓ Web accessible" || echo
 **Can't connect?**
 1. Check security group rules are saved
 2. Verify services are running: `docker-compose ps`
-3. Check if ports are listening: `netstat -tulpn | grep -E "(3001|8083)"`
-4. Try from EC2 first: `curl localhost:8083/health`
+3. Check if ports are listening: `netstat -tulpn | grep -E "(13000|18000)"`
+4. Try from EC2 first: `curl localhost:18000/health`
 5. Check EC2 instance state (must be running)
 6. Verify network ACLs allow traffic
 
@@ -147,3 +147,8 @@ curl -s "http://${EC2_IP}:3001" > /dev/null && echo "✓ Web accessible" || echo
 - Security group might not be updated yet (wait 30 seconds)
 - Check if EC2 instance has a public IP assigned
 - Verify VPC/subnet configuration allows internet access
+
+**Using high-numbered ports?**
+- These ports (13000-18000) are chosen to avoid common conflicts
+- No system services typically use these ports
+- Safe for development and testing environments

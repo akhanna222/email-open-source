@@ -1,35 +1,17 @@
 # Port Mappings
 
-Updated ports to avoid conflicts with existing services:
+Updated ports to avoid conflicts with existing services (using high-numbered ports):
 
-| Service  | Old Port | New Port | Access URL                      |
-|----------|----------|----------|---------------------------------|
-| Postgres | 5432     | **5433** | `localhost:5433`               |
-| Redis    | 6379     | **6380** | `localhost:6380`               |
-| API      | 8000     | **8083** | `http://localhost:8083/health` |
-| Web      | 3000     | **3001** | `http://localhost:3001`        |
+| Service  | Old Port | New Port  | Access URL                       |
+|----------|----------|-----------|----------------------------------|
+| Postgres | 5432     | **15432** | `localhost:15432`               |
+| Redis    | 6379     | **16379** | `localhost:16379`               |
+| API      | 8000     | **18000** | `http://localhost:18000/health` |
+| Web      | 3000     | **13000** | `http://localhost:13000`        |
 
-## Bootstrap Script Update
+## Bootstrap Script
 
-If using `bootstrap-workflow-agent.sh`, update the health check URL on line 80:
-
-```bash
-# Change from:
-wait_for_health "http://localhost:8000/health"
-
-# To:
-wait_for_health "http://localhost:8083/health"
-```
-
-And update the final output line:
-
-```bash
-# Change from:
-log "API:    http://localhost:8000/health"
-
-# To:
-log "API:    http://localhost:8083/health"
-```
+The `bootstrap-workflow-agent.sh` script is already configured with the correct ports.
 
 ## Database Connection
 
@@ -37,14 +19,14 @@ Update your `.env` file to use the new Postgres port:
 
 ```env
 POSTGRES_HOST=localhost
-POSTGRES_PORT=5433
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/workflow_agent
+POSTGRES_PORT=15432
+DATABASE_URL=postgresql://postgres:postgres@localhost:15432/workflow_agent
 ```
 
 ## Testing
 
 After starting services:
-- API: `curl http://localhost:8083/health`
-- Web: Open browser to `http://localhost:3001`
-- Postgres: `psql -h localhost -p 5433 -U postgres -d workflow_agent`
-- Redis: `redis-cli -p 6380`
+- API: `curl http://localhost:18000/health`
+- Web: Open browser to `http://localhost:13000`
+- Postgres: `psql -h localhost -p 15432 -U postgres -d workflow_agent`
+- Redis: `redis-cli -p 16379`

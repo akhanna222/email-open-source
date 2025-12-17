@@ -16,19 +16,19 @@ echo "Testing services at $EC2_IP"
 echo "================================"
 
 echo -n "API Health Check... "
-if curl -sf "http://${EC2_IP}:8083/health" > /dev/null 2>&1; then
-  echo "✓ API accessible at http://${EC2_IP}:8083"
+if curl -sf "http://${EC2_IP}:18000/health" > /dev/null 2>&1; then
+  echo "✓ API accessible at http://${EC2_IP}:18000"
 else
   echo "✗ API not accessible"
-  echo "  Try: curl http://${EC2_IP}:8083/health"
+  echo "  Try: curl http://${EC2_IP}:18000/health"
 fi
 
 echo -n "Web UI Check... "
-if curl -sf "http://${EC2_IP}:3001" > /dev/null 2>&1; then
-  echo "✓ Web accessible at http://${EC2_IP}:3001"
+if curl -sf "http://${EC2_IP}:13000" > /dev/null 2>&1; then
+  echo "✓ Web accessible at http://${EC2_IP}:13000"
 else
   echo "✗ Web not accessible"
-  echo "  Try: curl http://${EC2_IP}:3001"
+  echo "  Try: curl http://${EC2_IP}:13000"
 fi
 
 echo ""
@@ -38,6 +38,6 @@ docker-compose ps
 
 echo ""
 echo "Access URLs:"
-echo "  Web UI: http://${EC2_IP}:3001"
-echo "  API:    http://${EC2_IP}:8083/health"
-echo "  Docs:   http://${EC2_IP}:8083/docs"
+echo "  Web UI: http://${EC2_IP}:13000"
+echo "  API:    http://${EC2_IP}:18000/health"
+echo "  Docs:   http://${EC2_IP}:18000/docs"
