@@ -16,6 +16,7 @@ export default function Home() {
   const { workflowId, workflowName, nodes, edges, setWorkflowName, loadWorkflow } = useWorkflowStore();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState<number | null>(null);
   const [showSamples, setShowSamples] = useState(false);
   const [samples, setSamples] = useState<SampleWorkflow[]>([]);
   const [loadingSamples, setLoadingSamples] = useState(false);
@@ -23,14 +24,20 @@ export default function Home() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.saveWorkflow({
+      const result = await api.saveWorkflow({
         id: workflowId,
         name: workflowName,
         nodes,
         edges,
       });
+
+      // Capture version info
+      if (result.version) {
+        setCurrentVersion(result.version);
+      }
+
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error('Failed to save workflow:', error);
       alert('Failed to save workflow');
@@ -96,7 +103,12 @@ export default function Home() {
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
           >
             {saved ? <CheckCircle size={18} className="text-green-500" /> : <Save size={18} />}
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
+            <div className="flex flex-col items-start">
+              <span>{saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}</span>
+              {currentVersion && (
+                <span className="text-[10px] text-gray-500">v{currentVersion}</span>
+              )}
+            </div>
           </button>
           <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
             <Play size={18} />
