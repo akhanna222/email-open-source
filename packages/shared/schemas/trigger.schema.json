@@ -1,0 +1,13 @@
+{
+  "$id": "https://yourdomain.dev/schemas/trigger.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TriggerDefinition",
+  "type": "object",
+  "required": ["type", "node_id", "config"],
+  "properties": {
+    "type": { "type": "string", "minLength": 1 },
+    "node_id": { "type": "string", "minLength": 1 },
+    "config": { "type": "object" }
+  },
+  "additionalProperties": false
+}

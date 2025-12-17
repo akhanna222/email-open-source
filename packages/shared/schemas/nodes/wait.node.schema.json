@@ -1,0 +1,13 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/wait.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wait Node Config",
+  "type": "object",
+  "required": ["duration_seconds"],
+  "properties": {
+    "duration_seconds": { "type": "integer", "minimum": 1, "maximum": 86400 },
+    "reason": { "type": "string" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

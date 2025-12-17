@@ -1,0 +1,14 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/memory_read.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Memory Read Config",
+  "type": "object",
+  "required": ["query"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1 },
+    "semantic": { "type": "boolean", "default": false },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 20, "default": 5 },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

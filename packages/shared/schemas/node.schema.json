@@ -1,0 +1,32 @@
+{
+  "$id": "https://yourdomain.dev/schemas/node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NodeDefinition",
+  "type": "object",
+  "required": ["id", "type", "category", "name", "config", "position"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "enum": ["trigger", "messaging", "ai", "control", "utility"] },
+    "name": { "type": "string", "minLength": 1 },
+    "config": { "type": "object" },
+    "position": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "labels": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

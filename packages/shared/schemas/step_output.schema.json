@@ -1,0 +1,62 @@
+{
+  "$id": "https://yourdomain.dev/schemas/step_output.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StepOutputEnvelope",
+  "type": "object",
+  "required": ["status", "data", "artifacts", "events", "metrics", "errors"],
+  "properties": {
+    "status": { "type": "string", "enum": ["SUCCEEDED", "FAILED", "WAITING"] },
+    "data": { "type": "object" },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["text", "json", "file"] },
+          "path": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "payload"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["message_sent", "llm_call", "http_call", "approval_requested", "error"]
+          },
+          "payload": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "cost_usd": { "type": "number", "minimum": 0 },
+        "tokens_in": { "type": "integer", "minimum": 0 },
+        "tokens_out": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

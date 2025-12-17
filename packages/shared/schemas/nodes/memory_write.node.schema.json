@@ -1,0 +1,14 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/memory_write.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Memory Write Config",
+  "type": "object",
+  "required": ["key", "value"],
+  "properties": {
+    "key": { "type": "string", "minLength": 1 },
+    "value": { "type": "string", "minLength": 1 },
+    "embed": { "type": "boolean", "default": false },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

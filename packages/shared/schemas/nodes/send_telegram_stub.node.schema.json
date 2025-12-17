@@ -1,0 +1,14 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/send_telegram_stub.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Send Telegram Stub Config",
+  "type": "object",
+  "required": ["chat_id", "message"],
+  "properties": {
+    "chat_id": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1 },
+    "parse_mode": { "type": "string", "enum": ["markdown", "html", "text"], "default": "text" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

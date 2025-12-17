@@ -1,0 +1,12 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/merge.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Merge Node Config",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": { "type": "string", "enum": ["wait_all", "first_wins"], "default": "wait_all" },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

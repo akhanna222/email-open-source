@@ -1,0 +1,18 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/human_approval.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Human Approval Node Config",
+  "type": "object",
+  "required": ["approvers", "message"],
+  "properties": {
+    "approvers": {
+      "type": "array",
+      "items": { "type": "string", "format": "email" },
+      "minItems": 1
+    },
+    "message": { "type": "string", "minLength": 1 },
+    "timeout_seconds": { "type": "integer", "minimum": 60, "default": 3600 },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

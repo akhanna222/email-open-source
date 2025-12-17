@@ -1,0 +1,21 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/webhook_trigger.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Webhook Trigger Config",
+  "type": "object",
+  "required": ["test_url", "prod_url", "secret", "idempotency_key"] ,
+  "properties": {
+    "test_url": { "type": "string", "format": "uri" },
+    "prod_url": { "type": "string", "format": "uri" },
+    "secret": { "type": "string", "minLength": 8 },
+    "idempotency_key": { "type": "string", "minLength": 4 },
+    "x-ui": {
+      "type": "object",
+      "properties": {
+        "widgets": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
