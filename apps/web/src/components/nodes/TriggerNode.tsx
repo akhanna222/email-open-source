@@ -31,6 +31,13 @@ export default function TriggerNode({ data }: any) {
             )}
           </div>
         </div>
+
+        {/* Output indicator */}
+        {data.outputs && data.outputs.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-blue-100 text-[10px] text-gray-500">
+            <span className="font-semibold">Out:</span> {data.outputs.join(', ')}
+          </div>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-blue-500 !w-3 !h-3" />
     </div>

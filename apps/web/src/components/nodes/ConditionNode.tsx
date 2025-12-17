@@ -31,6 +31,14 @@ export default function ConditionNode({ data }: any) {
             )}
           </div>
         </div>
+
+        {/* Input indicator */}
+        {data.inputs && data.inputs.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-amber-100 text-[10px] text-gray-500">
+            <span className="font-semibold">In:</span> {data.inputs.join(', ')}
+          </div>
+        )}
+
         <div className="flex justify-between mt-3 px-2">
           <div className="text-[10px] text-gray-500 font-medium">TRUE</div>
           <div className="text-[10px] text-gray-500 font-medium">FALSE</div>

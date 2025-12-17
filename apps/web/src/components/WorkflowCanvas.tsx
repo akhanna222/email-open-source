@@ -14,6 +14,8 @@ import TriggerNode from './nodes/TriggerNode';
 import ActionNode from './nodes/ActionNode';
 import ConditionNode from './nodes/ConditionNode';
 import MessagingNode from './nodes/MessagingNode';
+import LLMNode from './nodes/LLMNode';
+import DatabaseNode from './nodes/DatabaseNode';
 
 // Store React Flow functions globally for Zustand
 if (typeof window !== 'undefined') {
@@ -24,7 +26,11 @@ const nodeTypes = {
   trigger: TriggerNode,
   action: ActionNode,
   condition: ConditionNode,
+  control: ConditionNode, // control nodes use same visual as condition
   messaging: MessagingNode,
+  ai: LLMNode,
+  database: DatabaseNode,
+  utility: ActionNode, // utility nodes use same visual as action
 };
 
 export default function WorkflowCanvas() {

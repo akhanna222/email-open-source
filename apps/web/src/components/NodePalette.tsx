@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Zap, Play, GitBranch, Mail, Database, MessageSquare, Send } from 'lucide-react';
+import { Zap, Play, GitBranch, Mail, Database, MessageSquare, Send, Brain, Sparkles } from 'lucide-react';
 import { useWorkflowStore } from '../store/workflowStore';
 import { api, NodeSchema } from '../services/api';
 
@@ -8,7 +8,10 @@ const getIcon = (category: string) => {
     case 'trigger': return Zap;
     case 'messaging': return Mail;
     case 'database': return Database;
+    case 'ai': return Brain;
     case 'condition': return GitBranch;
+    case 'control': return GitBranch;
+    case 'utility': return Play;
     default: return Play;
   }
 };
@@ -17,9 +20,13 @@ const getColor = (category: string) => {
   switch (category) {
     case 'trigger': return 'blue';
     case 'messaging': return 'purple';
+    case 'database': return 'indigo';
+    case 'ai': return 'purple';
     case 'condition': return 'amber';
+    case 'control': return 'amber';
     case 'action': return 'emerald';
-    default: return 'emerald';
+    case 'utility': return 'emerald';
+    default: return 'gray';
   }
 };
 

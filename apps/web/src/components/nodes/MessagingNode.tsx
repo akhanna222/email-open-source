@@ -31,6 +31,22 @@ export default function MessagingNode({ data }: any) {
             )}
           </div>
         </div>
+
+        {/* Input/Output indicators */}
+        {(data.inputs?.length > 0 || data.outputs?.length > 0) && (
+          <div className="mt-3 pt-3 border-t border-purple-100 flex justify-between text-[10px]">
+            {data.inputs && data.inputs.length > 0 && (
+              <div className="text-gray-500">
+                <span className="font-semibold">In:</span> {data.inputs.join(', ')}
+              </div>
+            )}
+            {data.outputs && data.outputs.length > 0 && (
+              <div className="text-gray-500">
+                <span className="font-semibold">Out:</span> {data.outputs.join(', ')}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-purple-500 !w-3 !h-3" />
     </div>
