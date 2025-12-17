@@ -122,37 +122,60 @@ export default function NodePalette() {
   }, {} as Record<string, NodeSchema[]>);
 
   return (
-    <div className="w-64 bg-gray-50 border-r border-gray-200 p-4 overflow-y-auto">
-      <h2 className="text-lg font-bold mb-4">Available Nodes</h2>
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full shadow-sm">
+      {/* Header - Fixed */}
+      <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <span className="text-xl">📦</span>
+          Available Nodes
+        </h2>
+        <p className="text-xs text-gray-500 mt-1">
+          Drag and drop to add to canvas
+        </p>
+      </div>
 
-      {Object.entries(groupedNodes).map(([category, schemas]) => (
-        <div key={category} className="mb-6">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">{category}</h3>
-          <div className="space-y-2">
-            {schemas.map((schema) => {
-              const Icon = getIcon(schema.category);
-              const color = getColor(schema.category);
-              return (
-                <button
-                  key={schema.type}
-                  onClick={() => handleAddNode(schema)}
-                  className="w-full flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-primary hover:shadow-md transition-all cursor-pointer text-left"
-                >
-                  <Icon size={18} className={`text-${color}-500 flex-shrink-0`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{schema.name}</div>
-                    <div className="text-xs text-gray-500 truncate">{schema.description}</div>
-                  </div>
-                </button>
-              );
-            })}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {Object.entries(groupedNodes).map(([category, schemas]) => (
+          <div key={category}>
+            <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <span className="w-8 h-0.5 bg-gray-300 rounded"></span>
+              {category}
+              <span className="flex-1 h-0.5 bg-gray-300 rounded"></span>
+            </h3>
+            <div className="space-y-2">
+              {schemas.map((schema) => {
+                const Icon = getIcon(schema.category);
+                const color = getColor(schema.category);
+                return (
+                  <button
+                    key={schema.type}
+                    onClick={() => handleAddNode(schema)}
+                    className="w-full flex items-center gap-3 p-3 bg-gradient-to-br from-white to-gray-50 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer text-left group"
+                  >
+                    <div className={`p-2 rounded-lg bg-${color}-50 group-hover:bg-${color}-100 transition-colors`}>
+                      <Icon size={18} className={`text-${color}-600 flex-shrink-0`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-gray-800 truncate">{schema.name}</div>
+                      <div className="text-xs text-gray-500 truncate leading-tight">{schema.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <div className="text-xs text-gray-600">
-          <strong>{nodeSchemas.length} nodes</strong> available from backend
+      {/* Footer - Fixed */}
+      <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 flex-shrink-0">
+        <div className="text-xs text-gray-700 flex items-center justify-between">
+          <div>
+            <span className="font-bold text-blue-600">{nodeSchemas.length}</span>
+            <span className="text-gray-600"> nodes available</span>
+          </div>
+          <span className="text-green-600 font-medium">● Connected</span>
         </div>
       </div>
     </div>
