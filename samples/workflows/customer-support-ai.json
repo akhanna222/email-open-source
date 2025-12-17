@@ -1,0 +1,183 @@
+{
+  "id": "sample-customer-support",
+  "name": "AI-Powered Customer Support Pipeline",
+  "description": "Multi-channel support: receive queries via email/WhatsApp, search knowledge base with vector DB, generate AI responses, and escalate complex issues",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "trigger",
+      "position": { "x": 150, "y": 50 },
+      "data": {
+        "label": "WhatsApp Query",
+        "nodeType": "whatsapp_trigger_stub",
+        "description": "Customer query via WhatsApp",
+        "inputs": [],
+        "outputs": ["message"]
+      }
+    },
+    {
+      "id": "2",
+      "type": "trigger",
+      "position": { "x": 350, "y": 50 },
+      "data": {
+        "label": "Email Query",
+        "nodeType": "gmail_trigger_stub",
+        "description": "Customer query via email",
+        "inputs": [],
+        "outputs": ["message"]
+      }
+    },
+    {
+      "id": "3",
+      "type": "control",
+      "position": { "x": 250, "y": 180 },
+      "data": {
+        "label": "Merge Channels",
+        "nodeType": "merge",
+        "description": "Combine queries from multiple channels",
+        "inputs": ["message", "message"],
+        "outputs": ["unified_query"]
+      }
+    },
+    {
+      "id": "4",
+      "type": "ai",
+      "position": { "x": 250, "y": 310 },
+      "data": {
+        "label": "Generate Query Embedding",
+        "nodeType": "openai_chat",
+        "description": "Create embedding for semantic search",
+        "inputs": ["unified_query"],
+        "outputs": ["embedding"]
+      }
+    },
+    {
+      "id": "5",
+      "type": "database",
+      "position": { "x": 250, "y": 440 },
+      "data": {
+        "label": "Search Knowledge Base",
+        "nodeType": "postgres_vector_search",
+        "description": "Find similar past queries and solutions",
+        "inputs": ["embedding", "limit"],
+        "outputs": ["results", "scores"]
+      }
+    },
+    {
+      "id": "6",
+      "type": "ai",
+      "position": { "x": 250, "y": 570 },
+      "data": {
+        "label": "Build Context Prompt",
+        "nodeType": "prompt_template",
+        "description": "Combine query + knowledge base results",
+        "inputs": ["unified_query", "results"],
+        "outputs": ["prompt"]
+      }
+    },
+    {
+      "id": "7",
+      "type": "ai",
+      "position": { "x": 250, "y": 700 },
+      "data": {
+        "label": "AI Agent Response",
+        "nodeType": "claude_chat",
+        "description": "Generate helpful response using Claude",
+        "inputs": ["prompt", "context"],
+        "outputs": ["response", "confidence"]
+      }
+    },
+    {
+      "id": "8",
+      "type": "control",
+      "position": { "x": 250, "y": 830 },
+      "data": {
+        "label": "Confidence Check",
+        "nodeType": "if",
+        "description": "Is AI confident in the answer?",
+        "inputs": ["confidence"],
+        "outputs": ["true", "false"]
+      }
+    },
+    {
+      "id": "9",
+      "type": "messaging",
+      "position": { "x": 100, "y": 960 },
+      "data": {
+        "label": "Send Auto-Response",
+        "nodeType": "reply_router",
+        "description": "Send AI-generated response to customer",
+        "inputs": ["response", "unified_query"],
+        "outputs": ["message_sent"]
+      }
+    },
+    {
+      "id": "10",
+      "type": "control",
+      "position": { "x": 400, "y": 960 },
+      "data": {
+        "label": "Human Approval Queue",
+        "nodeType": "human_approval",
+        "description": "Low confidence - escalate to human agent",
+        "inputs": ["response", "unified_query"],
+        "outputs": ["approved_response"]
+      }
+    },
+    {
+      "id": "11",
+      "type": "messaging",
+      "position": { "x": 400, "y": 1090 },
+      "data": {
+        "label": "Send Human Response",
+        "nodeType": "reply_router",
+        "description": "Send human-approved response",
+        "inputs": ["approved_response"],
+        "outputs": ["message_sent"]
+      }
+    },
+    {
+      "id": "12",
+      "type": "database",
+      "position": { "x": 250, "y": 1220 },
+      "data": {
+        "label": "Log Interaction",
+        "nodeType": "postgres_insert",
+        "description": "Store query and response for analytics",
+        "inputs": ["unified_query", "response"],
+        "outputs": ["inserted_id", "success"]
+      }
+    },
+    {
+      "id": "13",
+      "type": "database",
+      "position": { "x": 100, "y": 1090 },
+      "data": {
+        "label": "Update Knowledge Base",
+        "nodeType": "postgres_vector_store",
+        "description": "Store new Q&A pair for future searches",
+        "inputs": ["unified_query", "response", "embedding"],
+        "outputs": ["vector_id", "success"]
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1-3", "source": "1", "target": "3", "animated": true },
+    { "id": "e2-3", "source": "2", "target": "3", "animated": true },
+    { "id": "e3-4", "source": "3", "target": "4", "animated": true },
+    { "id": "e4-5", "source": "4", "target": "5", "animated": true },
+    { "id": "e5-6", "source": "5", "target": "6", "animated": true },
+    { "id": "e6-7", "source": "6", "target": "7", "animated": true },
+    { "id": "e7-8", "source": "7", "target": "8", "animated": true },
+    { "id": "e8-9", "source": "8", "target": "9", "sourceHandle": "true", "animated": true, "label": "HIGH" },
+    { "id": "e8-10", "source": "8", "target": "10", "sourceHandle": "false", "animated": true, "label": "LOW" },
+    { "id": "e9-13", "source": "9", "target": "13", "animated": true },
+    { "id": "e10-11", "source": "10", "target": "11", "animated": true },
+    { "id": "e11-12", "source": "11", "target": "12", "animated": true },
+    { "id": "e13-12", "source": "13", "target": "12", "animated": true }
+  ],
+  "metadata": {
+    "tags": ["customer-support", "ai-agent", "multi-channel", "vector-search", "human-in-loop"],
+    "use_case": "Customer Support Automation",
+    "complexity": "advanced"
+  }
+}

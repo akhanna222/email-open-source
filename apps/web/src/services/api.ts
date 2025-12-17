@@ -14,6 +14,16 @@ export interface Workflow {
   name: string;
   nodes: any[];
   edges: any[];
+  description?: string;
+  metadata?: any;
+}
+
+export interface SampleWorkflow {
+  id: string;
+  name: string;
+  description: string;
+  metadata: any;
+  filename: string;
 }
 
 export const api = {
@@ -63,5 +73,19 @@ export const api = {
       method: 'DELETE',
     });
     return response.json();
+  },
+
+  // Get sample workflows
+  async getSampleWorkflows(): Promise<SampleWorkflow[]> {
+    const response = await fetch(`${API_BASE_URL}/workflows/samples/list`);
+    const data = await response.json();
+    return data.samples || [];
+  },
+
+  // Load specific sample workflow
+  async loadSampleWorkflow(sampleId: string): Promise<Workflow> {
+    const response = await fetch(`${API_BASE_URL}/workflows/samples/${sampleId}`);
+    const data = await response.json();
+    return data.workflow;
   },
 };
