@@ -1,0 +1,66 @@
+{
+  "$id": "https://yourdomain.dev/schemas/workflow.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WorkflowDefinition",
+  "type": "object",
+  "required": ["workflow_id", "version", "nodes", "edges", "metadata"],
+  "properties": {
+    "workflow_id": { "type": "string", "format": "uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "status": { "type": "string", "enum": ["draft", "published"] },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "node.schema.json" },
+      "uniqueItems": true
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "edge.schema.json" }
+    },
+    "triggers": {
+      "type": "array",
+      "items": { "$ref": "trigger.schema.json" }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_by", "created_at"],
+      "properties": {
+        "created_by": { "type": "string", "format": "uuid" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "$comment": "Ensure at least one trigger node exists",
+      "if": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "not": {
+                "properties": { "type": { "const": "trigger" } }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "nodes": {
+            "contains": {
+              "properties": { "category": { "const": "trigger" } },
+              "required": ["category"]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

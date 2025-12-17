@@ -1,0 +1,26 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/if.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IF Node Config",
+  "type": "object",
+  "required": ["expression", "true_label", "false_label"],
+  "properties": {
+    "expression": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Expression evaluated against context variables. Must return boolean."
+    },
+    "true_label": { "type": "string", "default": "true" },
+    "false_label": { "type": "string", "default": "false" },
+    "strict": { "type": "boolean", "default": true },
+    "x-ui": {
+      "type": "object",
+      "properties": {
+        "order": { "type": "array", "items": { "type": "string" } },
+        "widgets": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

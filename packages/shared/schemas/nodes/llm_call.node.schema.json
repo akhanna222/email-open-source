@@ -1,0 +1,17 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/llm_call.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LLM Call Config",
+  "type": "object",
+  "required": ["provider", "model", "prompt"],
+  "properties": {
+    "provider": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "prompt": { "type": "string", "minLength": 1 },
+    "temperature": { "type": "number", "minimum": 0, "maximum": 2, "default": 0.7 },
+    "max_tokens": { "type": "integer", "minimum": 16, "maximum": 4096 },
+    "response_format": { "type": "string", "enum": ["text", "json"] },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

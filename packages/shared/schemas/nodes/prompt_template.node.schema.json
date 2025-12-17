@@ -1,0 +1,17 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/prompt_template.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prompt Template Config",
+  "type": "object",
+  "required": ["template"],
+  "properties": {
+    "template": { "type": "string", "minLength": 1 },
+    "variables": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "default": []
+    },
+    "x-ui": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

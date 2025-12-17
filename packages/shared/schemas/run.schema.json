@@ -1,0 +1,20 @@
+{
+  "$id": "https://yourdomain.dev/schemas/run.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunRecord",
+  "type": "object",
+  "required": ["run_id", "workflow_id", "status", "started_at", "tenant_id"],
+  "properties": {
+    "run_id": { "type": "string", "format": "uuid" },
+    "workflow_id": { "type": "string", "format": "uuid" },
+    "tenant_id": { "type": "string", "format": "uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "status": { "type": "string", "enum": ["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "WAITING", "CANCELLED"] },
+    "trigger": { "$ref": "trigger.schema.json" },
+    "metadata": { "type": "object" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "pinned_payload_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

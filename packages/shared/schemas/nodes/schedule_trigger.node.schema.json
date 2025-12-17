@@ -1,0 +1,17 @@
+{
+  "$id": "https://yourdomain.dev/schemas/nodes/schedule_trigger.node.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Schedule Trigger Config",
+  "type": "object",
+  "required": ["cron"],
+  "properties": {
+    "cron": { "type": "string", "pattern": "^([0-9*/,-]+\\s){4}[0-9*/,-]+$" },
+    "timezone": { "type": "string", "default": "UTC" },
+    "x-ui": {
+      "type": "object",
+      "properties": {"order": {"type": "array", "items": {"type": "string"}}},
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
