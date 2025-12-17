@@ -26,7 +26,11 @@ const nodeTypes = {
 };
 
 export default function WorkflowCanvas() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useWorkflowStore();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, setSelectedNode } = useWorkflowStore();
+
+  const onNodeClick = useCallback((event: React.MouseEvent, node: any) => {
+    setSelectedNode(node);
+  }, [setSelectedNode]);
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
@@ -36,6 +40,7 @@ export default function WorkflowCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
       >
