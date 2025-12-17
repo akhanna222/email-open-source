@@ -13,7 +13,7 @@ const WorkflowCanvas = dynamic(
 );
 
 export default function Home() {
-  const { workflowId, workflowName, nodes, edges, setWorkflowName, loadWorkflow } = useWorkflowStore();
+  const { workflowId, workflowName, nodes, edges, setWorkflowName, loadWorkflow, selectedNode, deleteNode } = useWorkflowStore();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<number | null>(null);
@@ -93,6 +93,50 @@ export default function Home() {
       fetchSamples();
     }
   }, [showSamples]);
+
+  // Keyboard shortcuts for delete
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if Delete or Backspace is pressed
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        // Don't delete if user is typing in an input field
+        const target = event.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
+
+        // Delete selected node
+        if (selectedNode) {
+          event.preventDefault(); // Prevent browser back navigation on Backspace
+
+          const { edges } = useWorkflowStore.getState();
+          const affectedEdges = edges.filter(
+            (edge) => edge.source === selectedNode.id || edge.target === selectedNode.id
+          );
+          const connectionCount = affectedEdges.length;
+
+          // Show confirmation
+          let confirmed = false;
+          if (connectionCount > 0) {
+            confirmed = window.confirm(
+              `Deleting this node will break ${connectionCount} connection${connectionCount > 1 ? 's' : ''}.\n\nAre you sure you want to delete "${selectedNode.data.label || selectedNode.type}"?`
+            );
+          } else {
+            confirmed = window.confirm(
+              `Are you sure you want to delete "${selectedNode.data.label || selectedNode.type}"?`
+            );
+          }
+
+          if (confirmed) {
+            deleteNode(selectedNode.id);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode, deleteNode]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

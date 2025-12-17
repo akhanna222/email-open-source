@@ -1,9 +1,9 @@
 import React from 'react';
-import { X, Settings, Tag, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, Settings, Tag, ArrowRight, ArrowLeft, Trash2 } from 'lucide-react';
 import { useWorkflowStore } from '../store/workflowStore';
 
 export default function NodeConfig() {
-  const { selectedNode, updateNode, setSelectedNode } = useWorkflowStore();
+  const { selectedNode, updateNode, deleteNode, setSelectedNode } = useWorkflowStore();
 
   if (!selectedNode) {
     return (
@@ -30,6 +30,33 @@ export default function NodeConfig() {
         data: { ...selectedNode.data, label: e.target.value },
       });
     }
+  };
+
+  const handleDelete = () => {
+    if (!selectedNode) return;
+
+    // Calculate affected connections by checking edges before deletion
+    const { edges } = useWorkflowStore.getState();
+    const affectedEdges = edges.filter(
+      (edge) => edge.source === selectedNode.id || edge.target === selectedNode.id
+    );
+    const connectionCount = affectedEdges.length;
+
+    // Show confirmation if there are connections
+    if (connectionCount > 0) {
+      const confirmed = window.confirm(
+        `Deleting this node will break ${connectionCount} connection${connectionCount > 1 ? 's' : ''}.\n\nAre you sure you want to delete "${selectedNode.data.label || selectedNode.type}"?`
+      );
+      if (!confirmed) return;
+    } else {
+      const confirmed = window.confirm(
+        `Are you sure you want to delete "${selectedNode.data.label || selectedNode.type}"?`
+      );
+      if (!confirmed) return;
+    }
+
+    // Delete the node
+    deleteNode(selectedNode.id);
   };
 
   return (
@@ -135,11 +162,19 @@ export default function NodeConfig() {
       </div>
 
       {/* Footer - Fixed */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+      <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0 space-y-3">
         <div className="text-xs text-gray-500 flex items-center justify-between">
           <span>Node ID: {selectedNode.id}</span>
           <span className="text-blue-600 font-medium">● Active</span>
         </div>
+        <button
+          onClick={handleDelete}
+          className="w-full px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center gap-2 font-semibold text-sm shadow-md hover:shadow-lg"
+          title="Delete this node (Delete/Backspace)"
+        >
+          <Trash2 size={16} />
+          Delete Node
+        </button>
       </div>
     </div>
   );
