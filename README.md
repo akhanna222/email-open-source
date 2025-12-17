@@ -43,23 +43,3 @@ Copy `.env.example` to `.env` and adjust values for local development.
 ## Docker Compose
 
 `docker-compose.yml` contains service definitions for Postgres, Redis, API, worker, and web. Update image tags as the implementation grows.
-
-## One-command bootstrap (Docker)
-
-After cloning this repo, you can bring everything up — dependencies, services, and tests — with:
-
-```bash
-./scripts/bootstrap-workflow-agent.sh
-```
-
-The script:
-- Installs Docker + Docker Compose plugin on Debian/Ubuntu (uses `docker.io`; avoids containerd conflicts).
-- Starts the stack via `docker compose up -d --build`.
-- Waits for `http://localhost:8000/health`.
-- Runs `pytest` inside the API service.
-
-Running outside the repo? Set `REPO_URL` (defaults to `https://github.com/akhanna222/email-open-source.git`) and `TARGET_DIR` then execute the script; it will clone the repo if missing:
-
-```bash
-REPO_URL=https://github.com/akhanna222/email-open-source.git TARGET_DIR=email-open-source ./scripts/bootstrap-workflow-agent.sh
-```
