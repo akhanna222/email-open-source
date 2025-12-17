@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "Redis connection string",
+      "default": "redis://localhost:6379"
+    },
+    "key": {
+      "type": "string",
+      "description": "Redis key to retrieve"
+    },
+    "decode": {
+      "type": "string",
+      "enum": ["string", "json", "binary"],
+      "default": "string",
+      "description": "How to decode the value"
+    }
+  },
+  "required": ["connection_string", "key"]
+}

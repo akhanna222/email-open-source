@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "PostgreSQL connection string with pgvector",
+      "format": "uri",
+      "default": "postgresql://user:password@localhost:5432/vectordb"
+    },
+    "table": {
+      "type": "string",
+      "default": "embeddings",
+      "description": "Table name for vector storage"
+    },
+    "embedding_column": {
+      "type": "string",
+      "default": "embedding",
+      "description": "Column name for vector data"
+    },
+    "distance_metric": {
+      "type": "string",
+      "enum": ["cosine", "l2", "inner_product"],
+      "default": "cosine",
+      "description": "Distance metric for similarity"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Maximum number of results"
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.7,
+      "description": "Minimum similarity threshold"
+    }
+  },
+  "required": ["connection_string", "table"]
+}

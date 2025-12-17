@@ -22,6 +22,19 @@ export default function Home() {
   const [loadingSamples, setLoadingSamples] = useState(false);
 
   const handleSave = async () => {
+    // Validation
+    if (!workflowName || workflowName.trim() === '') {
+      alert('Please enter a workflow name before saving');
+      return;
+    }
+
+    if (nodes.length === 0) {
+      const confirmed = window.confirm(
+        'Your workflow is empty (no nodes). Do you still want to save it?'
+      );
+      if (!confirmed) return;
+    }
+
     setSaving(true);
     try {
       const result = await api.saveWorkflow({
@@ -40,7 +53,8 @@ export default function Home() {
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error('Failed to save workflow:', error);
-      alert('Failed to save workflow');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to save workflow: ${errorMessage}\n\nPlease check that the backend is running.`);
     } finally {
       setSaving(false);
     }
@@ -61,11 +75,16 @@ export default function Home() {
   const loadSample = async (sampleId: string) => {
     try {
       const workflow = await api.loadSampleWorkflow(sampleId);
-      loadWorkflow(workflow);
-      setShowSamples(false);
+      if (workflow && workflow.nodes) {
+        loadWorkflow(workflow);
+        setShowSamples(false);
+      } else {
+        alert('Invalid workflow data received from server');
+      }
     } catch (error) {
       console.error('Failed to load sample workflow:', error);
-      alert('Failed to load sample workflow');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to load sample workflow: ${errorMessage}\n\nPlease check that the backend is running.`);
     }
   };
 

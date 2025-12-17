@@ -34,14 +34,21 @@ export default function NodePalette() {
   const { addNode } = useWorkflowStore();
   const [nodeSchemas, setNodeSchemas] = useState<NodeSchema[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadNodes() {
       try {
         const schemas = await api.getNodeSchemas();
-        setNodeSchemas(schemas);
+        console.log('Loaded node schemas:', schemas);
+        if (!schemas || schemas.length === 0) {
+          setError('No nodes available. Backend may not be running.');
+        } else {
+          setNodeSchemas(schemas);
+        }
       } catch (error) {
         console.error('Failed to load node schemas:', error);
+        setError(`Failed to load nodes: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
@@ -72,6 +79,38 @@ export default function NodePalette() {
     return (
       <div className="w-64 bg-gray-50 border-r border-gray-200 p-4 flex items-center justify-center">
         <div className="text-sm text-gray-500">Loading nodes...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
+        <h2 className="text-lg font-bold mb-4">Available Nodes</h2>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="text-sm font-semibold text-red-800 mb-2">Error Loading Nodes</div>
+          <div className="text-xs text-red-600">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 px-3 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (nodeSchemas.length === 0) {
+    return (
+      <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
+        <h2 className="text-lg font-bold mb-4">Available Nodes</h2>
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="text-sm font-semibold text-yellow-800 mb-2">No Nodes Found</div>
+          <div className="text-xs text-yellow-600">
+            Check that the backend API is running and accessible.
+          </div>
+        </div>
       </div>
     );
   }

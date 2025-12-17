@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "PostgreSQL connection string",
+      "format": "uri",
+      "default": "postgresql://user:password@localhost:5432/dbname"
+    },
+    "query": {
+      "type": "string",
+      "description": "SQL query to execute",
+      "format": "sql"
+    },
+    "parameters": {
+      "type": "array",
+      "description": "Query parameters for prepared statements",
+      "items": {
+        "type": ["string", "number", "boolean", "null"]
+      }
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 30000,
+      "description": "Query timeout in milliseconds"
+    }
+  },
+  "required": ["connection_string", "query"]
+}

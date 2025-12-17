@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "connection_string": {
+      "type": "string",
+      "description": "PostgreSQL connection string with pgvector",
+      "format": "uri",
+      "default": "postgresql://user:password@localhost:5432/vectordb"
+    },
+    "table": {
+      "type": "string",
+      "default": "embeddings",
+      "description": "Table name for vector storage"
+    },
+    "embedding_column": {
+      "type": "string",
+      "default": "embedding",
+      "description": "Column name for vector data"
+    },
+    "text_column": {
+      "type": "string",
+      "default": "text",
+      "description": "Column name for original text"
+    },
+    "metadata_column": {
+      "type": "string",
+      "default": "metadata",
+      "description": "Column name for metadata (JSONB)"
+    },
+    "dimension": {
+      "type": "integer",
+      "default": 1536,
+      "description": "Vector dimension (e.g., 1536 for OpenAI embeddings)"
+    }
+  },
+  "required": ["connection_string", "table"]
+}
