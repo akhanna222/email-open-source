@@ -96,8 +96,6 @@ main() {
 
   log "all done"
   log "API:    http://localhost:8000/health"
-  log "Schemas: http://localhost:8000/schemas/nodes"
-  log "Web UI: http://localhost:3000"
 }
 
 main "$@"
