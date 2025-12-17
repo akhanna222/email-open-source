@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Settings, Tag, ArrowRight, ArrowLeft, Trash2, ChevronDown, ChevronRight, Key } from 'lucide-react';
+import { X, Settings as SettingsIcon, Tag, ArrowRight, ArrowLeft, Trash2, ChevronDown, ChevronRight, Key, Sliders } from 'lucide-react';
 import { useWorkflowStore } from '../store/workflowStore';
+import NodeSettings from './NodeSettings';
 
 // Component to render a single parameter field based on JSON schema
 function ParameterField({
@@ -115,6 +116,7 @@ function ParameterField({
 export default function NodeConfig() {
   const { selectedNode, updateNode, deleteNode, setSelectedNode } = useWorkflowStore();
   const [showParameters, setShowParameters] = useState(true);
+  const [activeTab, setActiveTab] = useState<'parameters' | 'settings'>('parameters');
 
   if (!selectedNode) {
     return (
@@ -122,7 +124,7 @@ export default function NodeConfig() {
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center text-gray-400">
             <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <Settings size={40} className="text-gray-300" />
+              <SettingsIcon size={40} className="text-gray-300" />
             </div>
             <div className="text-sm font-medium text-gray-600">No Node Selected</div>
             <div className="text-xs text-gray-400 mt-2">Click on a node to configure it</div>
@@ -153,6 +155,18 @@ export default function NodeConfig() {
       updateNode(selectedNode.id, {
         ...selectedNode,
         data: { ...selectedNode.data, parameters: updatedParameters },
+      });
+    }
+  };
+
+  const handleSettingsChange = (newSettings: any) => {
+    if (selectedNode) {
+      updateNode(selectedNode.id, {
+        ...selectedNode,
+        data: {
+          ...selectedNode.data,
+          settings: newSettings,
+        },
       });
     }
   };
@@ -193,7 +207,7 @@ export default function NodeConfig() {
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Settings size={18} className="text-blue-600" />
+            <SettingsIcon size={18} className="text-blue-600" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-800">Configuration</h2>
@@ -209,15 +223,49 @@ export default function NodeConfig() {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="border-b border-gray-200 flex-shrink-0 bg-white">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('parameters')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
+              activeTab === 'parameters'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Key size={16} />
+              Parameters
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
+              activeTab === 'settings'
+                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Sliders size={16} />
+              Settings
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Node Type Badge */}
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-xs font-bold uppercase">
-            {selectedNode.data.nodeType || selectedNode.type}
-          </div>
-          <div className="text-xs text-gray-400">Type</div>
-        </div>
+        {activeTab === 'parameters' && (
+          <>
+            {/* Node Type Badge */}
+            <div className="flex items-center gap-2">
+              <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-xs font-bold uppercase">
+                {selectedNode.data.nodeType || selectedNode.type}
+              </div>
+              <div className="text-xs text-gray-400">Type</div>
+            </div>
 
         {/* Label Input */}
         <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-200">
@@ -307,16 +355,25 @@ export default function NodeConfig() {
           </div>
         )}
 
-        {/* Description */}
-        {selectedNode.data.description && (
-          <div className="bg-gradient-to-br from-purple-50 to-white p-4 rounded-xl border border-purple-200">
-            <label className="text-sm font-semibold text-purple-700 mb-2 block">
-              Description
-            </label>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {selectedNode.data.description}
-            </p>
-          </div>
+            {/* Description */}
+            {selectedNode.data.description && (
+              <div className="bg-gradient-to-br from-purple-50 to-white p-4 rounded-xl border border-purple-200">
+                <label className="text-sm font-semibold text-purple-700 mb-2 block">
+                  Description
+                </label>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {selectedNode.data.description}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'settings' && (
+          <NodeSettings
+            settings={selectedNode.data.settings || {}}
+            onChange={handleSettingsChange}
+          />
         )}
       </div>
 
