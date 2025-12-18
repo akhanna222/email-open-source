@@ -86,22 +86,46 @@ export default function Home() {
     setExecuting(true);
     setExecutionResult(null);
     try {
+      console.log('🚀 Executing workflow:', workflowId);
       const result = await api.executeWorkflow(workflowId);
+      console.log('📊 Execution result:', result);
+
       setExecutionResult(result);
       setShowExecutionResult(true);
 
       if (result.success) {
-        console.log('Execution completed:', result);
+        console.log('✅ Execution completed successfully');
       } else {
-        console.error('Execution failed:', result);
+        console.error('❌ Execution failed:', result.error);
       }
     } catch (error) {
-      console.error('Failed to execute workflow:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('💥 Failed to execute workflow:', error);
+
+      // Better error message
+      let errorMessage = 'Unknown error occurred';
+      let errorDetails = '';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Check for common issues
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('fetch')) {
+          errorMessage = '🔌 Cannot connect to backend API';
+          errorDetails = '\n\nPlease check:\n\n1️⃣ Backend is running on port 18000\n   Run: cd apps/api && uvicorn main:app --reload --port 18000\n\n2️⃣ Check browser console for errors\n\n3️⃣ Verify API URL in Network tab';
+        }
+      }
+
       setExecutionResult({
         success: false,
         error: errorMessage,
-        workflow_id: workflowId
+        traceback: errorDetails,
+        workflow_id: workflowId,
+        logs: [{
+          timestamp: new Date().toISOString(),
+          node_id: 'system',
+          message: 'Failed to connect to backend',
+          level: 'error'
+        }]
       });
       setShowExecutionResult(true);
     } finally {
