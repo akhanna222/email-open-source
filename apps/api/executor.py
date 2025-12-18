@@ -100,7 +100,12 @@ class HttpRequestExecutor(NodeExecutor):
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
         params = node.get('data', {}).get('parameters', {})
-        url = params.get('url', '')
+
+        # Validate required parameters
+        url = params.get('url', '').strip()
+        if not url:
+            raise Exception("❌ Missing required parameter: 'url'\n\nPlease configure the HTTP Request node with a valid URL in the Parameters tab.")
+
         method = params.get('method', 'GET').upper()
         headers = params.get('headers', {})
         body = params.get('body', '')
@@ -186,11 +191,18 @@ class LlmCallExecutor(NodeExecutor):
         params = node.get('data', {}).get('parameters', {})
         provider = params.get('provider', 'openai')
         model = params.get('model', 'gpt-4')
-        prompt = params.get('prompt', '')
-        api_key = params.get('apiKey', '')
+        prompt = params.get('prompt', '').strip()
+        api_key = params.get('apiKey', '').strip()
         temperature = params.get('temperature', 0.7)
         max_tokens = params.get('maxTokens', 1000)
         json_mode = params.get('jsonMode', False)
+
+        # Validate required parameters
+        if not prompt:
+            raise Exception("❌ Missing required parameter: 'prompt'\n\nPlease add a prompt in the LLM Call node Parameters tab.")
+
+        if not api_key:
+            raise Exception(f"❌ Missing required parameter: 'apiKey'\n\nPlease add your {provider.upper()} API key in the LLM Call node Parameters tab.\n\nGet your API key from:\n- OpenAI: https://platform.openai.com/api-keys\n- Anthropic: https://console.anthropic.com/settings/keys")
 
         context.log(node['id'], f"Calling {provider} LLM: {model}")
 
@@ -292,7 +304,11 @@ class TransformJsExecutor(NodeExecutor):
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
         params = node.get('data', {}).get('parameters', {})
-        code = params.get('code', '')
+        code = params.get('code', '').strip()
+
+        # Validate required parameters
+        if not code:
+            raise Exception("❌ Missing required parameter: 'code'\n\nPlease add JavaScript code in the Transform JS node Parameters tab.\n\nExample:\nreturn { result: input.value * 2 };")
 
         context.log(node['id'], "Executing JavaScript code")
 
@@ -457,19 +473,35 @@ class GmailSendExecutor(NodeExecutor):
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
         params = node.get('data', {}).get('parameters', {})
-        to = params.get('to', '')
-        subject = params.get('subject', '')
-        body = params.get('body', '')
+        to = params.get('to', '').strip()
+        subject = params.get('subject', '').strip()
+        body = params.get('body', '').strip()
         body_format = params.get('bodyFormat', 'text')
 
         # Gmail credentials
-        from_email = params.get('fromEmail', '')
-        password = params.get('password', '')  # App password
+        from_email = params.get('fromEmail', '').strip()
+        password = params.get('password', '').strip()  # App password
+
+        # Validate required parameters
+        missing = []
+        if not to:
+            missing.append("'to' (recipient email address)")
+        if not subject:
+            missing.append("'subject' (email subject)")
+        if not body:
+            missing.append("'body' (email content)")
+        if not from_email:
+            missing.append("'fromEmail' (your Gmail address)")
+        if not password:
+            missing.append("'password' (Gmail App Password)")
+
+        if missing:
+            raise Exception(f"❌ Missing required parameters:\n\n" + "\n".join(f"  • {m}" for m in missing) +
+                          f"\n\nPlease configure all required fields in the Gmail Send node Parameters tab.\n\n" +
+                          f"Note: Use a Gmail App Password (not your regular password).\n" +
+                          f"Create one at: https://myaccount.google.com/apppasswords")
 
         context.log(node['id'], f"Sending email to {to}")
-
-        if not all([to, subject, from_email, password]):
-            raise Exception("Missing required email parameters: to, subject, fromEmail, password")
 
         try:
             import aiosmtplib
