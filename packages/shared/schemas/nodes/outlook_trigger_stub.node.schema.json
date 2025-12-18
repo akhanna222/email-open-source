@@ -1,13 +1,104 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/outlook_trigger_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Outlook Trigger Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["simulate_interval_seconds"],
   "properties": {
-    "simulate_interval_seconds": { "type": "integer", "minimum": 10 },
-    "folder": { "type": "string", "default": "Inbox" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["OAuth2", "appPassword"],
+      "default": "OAuth2",
+      "description": "Authentication method for Outlook/Microsoft 365"
+    },
+    "clientId": {
+      "type": "string",
+      "description": "Microsoft Azure App Client ID",
+      "format": "password"
+    },
+    "clientSecret": {
+      "type": "string",
+      "description": "Microsoft Azure App Client Secret",
+      "format": "password"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "Azure AD Tenant ID",
+      "format": "password"
+    },
+    "accessToken": {
+      "type": "string",
+      "description": "OAuth2 Access Token",
+      "format": "password"
+    },
+    "refreshToken": {
+      "type": "string",
+      "description": "OAuth2 Refresh Token",
+      "format": "password"
+    },
+    "username": {
+      "type": "string",
+      "format": "email",
+      "description": "Outlook email address (for app password auth)"
+    },
+    "appPassword": {
+      "type": "string",
+      "format": "password",
+      "description": "App-specific password (not your regular password)"
+    },
+    "pollInterval": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 3600,
+      "default": 300,
+      "description": "How often to check for new emails (in seconds)"
+    },
+    "folderPath": {
+      "type": "string",
+      "default": "Inbox",
+      "description": "Outlook folder to monitor (e.g., Inbox, Sent, Custom/Folder)"
+    },
+    "filterQuery": {
+      "type": "string",
+      "description": "OData filter query (e.g., from eq 'user@example.com')"
+    },
+    "maxResults": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Maximum number of messages to retrieve per poll"
+    },
+    "markAsRead": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically mark messages as read after processing"
+    },
+    "downloadAttachments": {
+      "type": "boolean",
+      "default": false,
+      "description": "Download email attachments"
+    },
+    "includeDeletedItems": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include messages from Deleted Items folder"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication", "pollInterval"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authentication": { "const": "OAuth2" } }
+      },
+      "then": {
+        "required": ["clientId", "clientSecret", "tenantId"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "authentication": { "const": "appPassword" } }
+      },
+      "then": {
+        "required": ["username", "appPassword"]
+      }
+    }
+  ]
 }

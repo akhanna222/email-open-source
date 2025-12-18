@@ -1,14 +1,64 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/send_telegram_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Send Telegram Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["chat_id", "message"],
   "properties": {
-    "chat_id": { "type": "string", "minLength": 1 },
-    "message": { "type": "string", "minLength": 1 },
-    "parse_mode": { "type": "string", "enum": ["markdown", "html", "text"], "default": "text" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "botToken": {
+      "type": "string",
+      "format": "password",
+      "description": "Telegram Bot API token (from @BotFather)"
+    },
+    "chatId": {
+      "type": "string",
+      "description": "Chat ID or username (e.g., @channelname or 123456789)"
+    },
+    "messageType": {
+      "type": "string",
+      "enum": ["text", "photo", "document", "video", "audio", "location"],
+      "default": "text",
+      "description": "Type of message to send"
+    },
+    "text": {
+      "type": "string",
+      "description": "Message text"
+    },
+    "parseMode": {
+      "type": "string",
+      "enum": ["Markdown", "MarkdownV2", "HTML"],
+      "description": "Text formatting mode"
+    },
+    "mediaUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL or file ID for media messages"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Caption for media messages"
+    },
+    "disableNotification": {
+      "type": "boolean",
+      "default": false,
+      "description": "Send silently (users will receive notification without sound)"
+    },
+    "replyToMessageId": {
+      "type": "integer",
+      "description": "Message ID to reply to"
+    },
+    "inlineKeyboard": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "url": { "type": "string" },
+            "callback_data": { "type": "string" }
+          }
+        }
+      },
+      "description": "Inline keyboard buttons"
+    }
   },
-  "additionalProperties": false
+  "required": ["botToken", "chatId", "messageType"]
 }

@@ -1,21 +1,79 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/webhook_trigger.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Webhook Trigger Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["test_url", "prod_url", "secret", "idempotency_key"] ,
   "properties": {
-    "test_url": { "type": "string", "format": "uri" },
-    "prod_url": { "type": "string", "format": "uri" },
-    "secret": { "type": "string", "minLength": 8 },
-    "idempotency_key": { "type": "string", "minLength": 4 },
-    "x-ui": {
-      "type": "object",
-      "properties": {
-        "widgets": { "type": "object" }
-      },
-      "additionalProperties": true
+    "path": {
+      "type": "string",
+      "default": "/webhook",
+      "description": "Webhook URL path (e.g., /webhook/my-endpoint)"
+    },
+    "httpMethod": {
+      "type": "string",
+      "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "ANY"],
+      "default": "POST",
+      "description": "Allowed HTTP method(s)"
+    },
+    "authentication": {
+      "type": "string",
+      "enum": ["none", "basicAuth", "headerAuth", "queryAuth"],
+      "default": "none",
+      "description": "Webhook authentication method"
+    },
+    "authUsername": {
+      "type": "string",
+      "description": "Basic auth username"
+    },
+    "authPassword": {
+      "type": "string",
+      "format": "password",
+      "description": "Basic auth password"
+    },
+    "authHeaderName": {
+      "type": "string",
+      "default": "X-API-Key",
+      "description": "Header name for authentication"
+    },
+    "authHeaderValue": {
+      "type": "string",
+      "format": "password",
+      "description": "Expected header value"
+    },
+    "authQueryParam": {
+      "type": "string",
+      "default": "token",
+      "description": "Query parameter name for authentication"
+    },
+    "authQueryValue": {
+      "type": "string",
+      "format": "password",
+      "description": "Expected query parameter value"
+    },
+    "responseMode": {
+      "type": "string",
+      "enum": ["onReceived", "lastNode", "responseNode"],
+      "default": "onReceived",
+      "description": "When to send HTTP response"
+    },
+    "responseCode": {
+      "type": "integer",
+      "default": 200,
+      "minimum": 100,
+      "maximum": 599,
+      "description": "HTTP response status code"
+    },
+    "responseBody": {
+      "type": "string",
+      "description": "Custom response body (JSON or text)"
+    },
+    "enableIdempotency": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevent duplicate webhook processing"
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "description": "Request header/field to use as idempotency key"
     }
   },
-  "additionalProperties": false
+  "required": ["path", "httpMethod"]
 }

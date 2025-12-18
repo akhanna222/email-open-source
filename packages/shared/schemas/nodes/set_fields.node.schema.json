@@ -1,25 +1,37 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/set_fields.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Set / Edit Fields Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["operations"],
   "properties": {
-    "operations": {
+    "mode": {
+      "type": "string",
+      "enum": ["manual", "jsonata"],
+      "default": "manual",
+      "description": "Field setting mode"
+    },
+    "fields": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["op", "path"],
         "properties": {
-          "op": { "type": "string", "enum": ["set", "rename", "drop"] },
-          "path": { "type": "string", "minLength": 1 },
-          "value": { "type": ["string", "number", "boolean", "object", "array", "null"] }
-        },
-        "additionalProperties": false
+          "operation": {
+            "type": "string",
+            "enum": ["set", "remove", "rename"]
+          },
+          "name": { "type": "string" },
+          "value": { "type": "string" },
+          "newName": { "type": "string" }
+        }
       },
-      "minItems": 1
+      "description": "Field operations to perform"
     },
-    "x-ui": { "type": "object", "additionalProperties": true }
-  },
-  "additionalProperties": false
+    "jsonataExpression": {
+      "type": "string",
+      "description": "JSONata transformation expression"
+    },
+    "includeOtherFields": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include fields not explicitly set/removed"
+    }
+  }
 }

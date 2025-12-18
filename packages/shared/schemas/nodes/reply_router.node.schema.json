@@ -1,14 +1,28 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/reply_router.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Reply Router Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["thread_key", "dedupe_window_seconds"],
   "properties": {
-    "thread_key": { "type": "string", "minLength": 1 },
-    "dedupe_window_seconds": { "type": "integer", "minimum": 0 },
-    "idempotency_key": { "type": "string", "minLength": 4 },
-    "x-ui": { "type": "object", "additionalProperties": true }
-  },
-  "additionalProperties": false
+    "threadIdField": {
+      "type": "string",
+      "default": "threadId",
+      "description": "Field containing thread/conversation ID"
+    },
+    "storageBackend": {
+      "type": "string",
+      "enum": ["memory", "redis", "postgres"],
+      "default": "memory",
+      "description": "Where to store thread mappings"
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 86400,
+      "description": "Thread mapping TTL in seconds (0 = no expiration)"
+    },
+    "createNewThread": {
+      "type": "boolean",
+      "default": true,
+      "description": "Create new thread if not found"
+    }
+  }
 }

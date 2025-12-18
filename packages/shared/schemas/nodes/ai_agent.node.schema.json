@@ -1,19 +1,65 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/ai_agent.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AI Agent Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["instructions", "tools"],
   "properties": {
-    "instructions": { "type": "string", "minLength": 1 },
+    "provider": {
+      "type": "string",
+      "enum": ["openai", "anthropic", "google"],
+      "default": "openai",
+      "description": "LLM provider for agent"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model name"
+    },
+    "apiKey": {
+      "type": "string",
+      "format": "password",
+      "description": "API key for the LLM provider"
+    },
+    "systemPrompt": {
+      "type": "string",
+      "default": "You are a helpful AI assistant with access to tools.",
+      "description": "System prompt defining agent behavior"
+    },
     "tools": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "minItems": 0
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "parameters": { "type": "object" }
+        }
+      },
+      "description": "Available tools for the agent"
     },
-    "max_turns": { "type": "integer", "minimum": 1, "maximum": 20, "default": 8 },
-    "memory_key": { "type": "string" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "maxIterations": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 5,
+      "description": "Maximum agent iterations"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2,
+      "default": 0.7,
+      "description": "Sampling temperature"
+    },
+    "enableMemory": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable conversation memory"
+    },
+    "memorySize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Number of messages to remember"
+    }
   },
-  "additionalProperties": false
+  "required": ["provider", "apiKey"]
 }

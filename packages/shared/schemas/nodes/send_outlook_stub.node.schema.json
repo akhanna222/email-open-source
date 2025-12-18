@@ -1,15 +1,127 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/send_outlook_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Send Outlook Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["to", "subject", "body"],
   "properties": {
-    "to": { "type": "string", "format": "email" },
-    "subject": { "type": "string", "minLength": 1 },
-    "body": { "type": "string", "minLength": 1 },
-    "importance": { "type": "string", "enum": ["low", "normal", "high"], "default": "normal" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["OAuth2", "appPassword"],
+      "default": "OAuth2",
+      "description": "Authentication method for Outlook/Microsoft 365"
+    },
+    "clientId": {
+      "type": "string",
+      "description": "Microsoft Azure App Client ID",
+      "format": "password"
+    },
+    "clientSecret": {
+      "type": "string",
+      "description": "Microsoft Azure App Client Secret",
+      "format": "password"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "Azure AD Tenant ID",
+      "format": "password"
+    },
+    "accessToken": {
+      "type": "string",
+      "description": "OAuth2 Access Token",
+      "format": "password"
+    },
+    "refreshToken": {
+      "type": "string",
+      "description": "OAuth2 Refresh Token",
+      "format": "password"
+    },
+    "username": {
+      "type": "string",
+      "format": "email",
+      "description": "Outlook email address (for app password auth)"
+    },
+    "appPassword": {
+      "type": "string",
+      "format": "password",
+      "description": "App-specific password"
+    },
+    "to": {
+      "type": "string",
+      "description": "Recipient email address(es), semicolon-separated"
+    },
+    "cc": {
+      "type": "string",
+      "description": "CC email address(es), semicolon-separated"
+    },
+    "bcc": {
+      "type": "string",
+      "description": "BCC email address(es), semicolon-separated"
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Email subject line"
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Email body content (HTML supported)"
+    },
+    "bodyFormat": {
+      "type": "string",
+      "enum": ["text", "html"],
+      "default": "html",
+      "description": "Email body format"
+    },
+    "importance": {
+      "type": "string",
+      "enum": ["low", "normal", "high"],
+      "default": "normal",
+      "description": "Email importance level"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": { "type": "string" },
+          "content": { "type": "string" },
+          "contentType": { "type": "string" }
+        }
+      },
+      "description": "Email attachments"
+    },
+    "replyTo": {
+      "type": "string",
+      "format": "email",
+      "description": "Reply-To email address"
+    },
+    "category": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Outlook categories/labels"
+    },
+    "saveToSentItems": {
+      "type": "boolean",
+      "default": true,
+      "description": "Save copy to Sent Items folder"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authentication": { "const": "OAuth2" } }
+      },
+      "then": {
+        "required": ["clientId", "clientSecret", "tenantId", "to", "subject", "body"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "authentication": { "const": "appPassword" } }
+      },
+      "then": {
+        "required": ["username", "appPassword", "to", "subject", "body"]
+      }
+    }
+  ]
 }

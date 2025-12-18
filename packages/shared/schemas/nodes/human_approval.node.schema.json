@@ -1,18 +1,45 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/human_approval.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Human Approval Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["approvers", "message"],
   "properties": {
+    "approvalMode": {
+      "type": "string",
+      "enum": ["webhook", "email", "slack"],
+      "default": "webhook",
+      "description": "How to request approval"
+    },
+    "message": {
+      "type": "string",
+      "description": "Approval request message"
+    },
     "approvers": {
       "type": "array",
       "items": { "type": "string", "format": "email" },
-      "minItems": 1
+      "description": "Email addresses of approvers"
     },
-    "message": { "type": "string", "minLength": 1 },
-    "timeout_seconds": { "type": "integer", "minimum": 60, "default": 3600 },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "requireAll": {
+      "type": "boolean",
+      "default": false,
+      "description": "Require all approvers to approve"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 2592000,
+      "default": 86400,
+      "description": "Approval timeout in seconds"
+    },
+    "timeoutAction": {
+      "type": "string",
+      "enum": ["approve", "reject", "fail"],
+      "default": "reject",
+      "description": "Action when timeout is reached"
+    },
+    "webhookUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Webhook URL for approval response"
+    }
   },
-  "additionalProperties": false
+  "required": ["message"]
 }

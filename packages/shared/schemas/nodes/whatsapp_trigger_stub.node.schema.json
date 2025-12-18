@@ -1,13 +1,67 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/whatsapp_trigger_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "WhatsApp Trigger Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["simulate_interval_seconds"],
   "properties": {
-    "simulate_interval_seconds": { "type": "integer", "minimum": 5 },
-    "phone_number": { "type": "string", "pattern": "^\\+[1-9][0-9]{7,14}$" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["apiKey", "cloudAPI"],
+      "default": "cloudAPI",
+      "description": "WhatsApp Business API authentication method"
+    },
+    "apiKey": {
+      "type": "string",
+      "format": "password",
+      "description": "WhatsApp Business API key"
+    },
+    "phoneNumberId": {
+      "type": "string",
+      "description": "WhatsApp Business Phone Number ID"
+    },
+    "accessToken": {
+      "type": "string",
+      "format": "password",
+      "description": "WhatsApp Cloud API Access Token"
+    },
+    "webhookVerifyToken": {
+      "type": "string",
+      "format": "password",
+      "description": "Webhook verification token"
+    },
+    "pollInterval": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 3600,
+      "default": 300,
+      "description": "How often to check for new messages (in seconds)"
+    },
+    "markAsRead": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mark messages as read after processing"
+    },
+    "downloadMedia": {
+      "type": "boolean",
+      "default": false,
+      "description": "Download media attachments (images, videos, documents)"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication", "phoneNumberId"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authentication": { "const": "cloudAPI" } }
+      },
+      "then": {
+        "required": ["accessToken"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "authentication": { "const": "apiKey" } }
+      },
+      "then": {
+        "required": ["apiKey"]
+      }
+    }
+  ]
 }

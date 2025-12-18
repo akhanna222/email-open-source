@@ -1,22 +1,15 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/manual_trigger.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Manual Trigger Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["payload"],
   "properties": {
-    "payload": {
-      "type": "object",
-      "description": "Initial payload provided by the user."
+    "testPayload": {
+      "type": "string",
+      "description": "JSON test payload to use when manually triggering"
     },
-    "x-ui": {
-      "type": "object",
-      "properties": {
-        "order": { "type": "array", "items": { "type": "string" } },
-        "widgets": { "type": "object" }
-      },
-      "additionalProperties": true
+    "allowDuplicates": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow triggering multiple times with same payload"
     }
-  },
-  "additionalProperties": false
+  }
 }

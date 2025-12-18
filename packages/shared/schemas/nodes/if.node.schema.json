@@ -1,26 +1,38 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/if.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "IF Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["expression", "true_label", "false_label"],
   "properties": {
-    "expression": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Expression evaluated against context variables. Must return boolean."
-    },
-    "true_label": { "type": "string", "default": "true" },
-    "false_label": { "type": "string", "default": "false" },
-    "strict": { "type": "boolean", "default": true },
-    "x-ui": {
-      "type": "object",
-      "properties": {
-        "order": { "type": "array", "items": { "type": "string" } },
-        "widgets": { "type": "object" }
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "leftValue": { "type": "string" },
+          "operation": {
+            "type": "string",
+            "enum": ["equals", "notEquals", "contains", "notContains", "startsWith", "endsWith", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual", "isEmpty", "isNotEmpty", "regex"]
+          },
+          "rightValue": { "type": "string" }
+        }
       },
-      "additionalProperties": true
+      "description": "Conditions to evaluate"
+    },
+    "combineOperation": {
+      "type": "string",
+      "enum": ["AND", "OR"],
+      "default": "AND",
+      "description": "How to combine multiple conditions"
+    },
+    "trueLabel": {
+      "type": "string",
+      "default": "true",
+      "description": "Label for true output"
+    },
+    "falseLabel": {
+      "type": "string",
+      "default": "false",
+      "description": "Label for false output"
     }
   },
-  "additionalProperties": false
+  "required": ["conditions"]
 }

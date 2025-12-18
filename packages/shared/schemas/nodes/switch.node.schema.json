@@ -1,26 +1,31 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/switch.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Switch Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["expression", "cases"],
   "properties": {
-    "expression": { "type": "string", "minLength": 1 },
-    "cases": {
+    "dataPropertyName": {
+      "type": "string",
+      "description": "Property to evaluate (e.g., 'data.status')"
+    },
+    "rules": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["label", "match"],
         "properties": {
-          "label": { "type": "string" },
-          "match": { "type": ["string", "number", "boolean"] }
-        },
-        "additionalProperties": false
+          "outputKey": { "type": "string" },
+          "operation": {
+            "type": "string",
+            "enum": ["equals", "notEquals", "contains", "regex", "greaterThan", "lessThan"]
+          },
+          "value": { "type": "string" }
+        }
       },
-      "minItems": 1
+      "description": "Routing rules (evaluated in order)"
     },
-    "default_label": { "type": "string", "default": "default" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "fallbackOutput": {
+      "type": "string",
+      "default": "default",
+      "description": "Output name when no rules match"
+    }
   },
-  "additionalProperties": false
+  "required": ["dataPropertyName", "rules"]
 }

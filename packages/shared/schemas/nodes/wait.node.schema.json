@@ -1,13 +1,39 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/wait.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Wait Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["duration_seconds"],
   "properties": {
-    "duration_seconds": { "type": "integer", "minimum": 1, "maximum": 86400 },
-    "reason": { "type": "string" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "resume": {
+      "type": "string",
+      "enum": ["afterTimeInterval", "atSpecificTime", "onWebhookCall"],
+      "default": "afterTimeInterval",
+      "description": "When to resume execution"
+    },
+    "waitAmount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Amount of time to wait"
+    },
+    "waitUnit": {
+      "type": "string",
+      "enum": ["seconds", "minutes", "hours", "days"],
+      "default": "seconds",
+      "description": "Time unit"
+    },
+    "waitUntilDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Specific date/time to wait until (ISO 8601)"
+    },
+    "webhookPath": {
+      "type": "string",
+      "description": "Webhook path to resume execution"
+    },
+    "webhookTimeout": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 2592000,
+      "description": "Webhook timeout in seconds (max 30 days)"
+    }
   },
-  "additionalProperties": false
+  "required": ["resume"]
 }

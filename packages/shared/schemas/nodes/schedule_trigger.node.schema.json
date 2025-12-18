@@ -1,17 +1,70 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/schedule_trigger.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Schedule Trigger Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["cron"],
   "properties": {
-    "cron": { "type": "string", "pattern": "^([0-9*/,-]+\\s){4}[0-9*/,-]+$" },
-    "timezone": { "type": "string", "default": "UTC" },
-    "x-ui": {
-      "type": "object",
-      "properties": {"order": {"type": "array", "items": {"type": "string"}}},
-      "additionalProperties": true
+    "mode": {
+      "type": "string",
+      "enum": ["everyMinutes", "everyHours", "everyDays", "everyWeek", "everyMonth", "custom"],
+      "default": "everyHours",
+      "description": "Schedule frequency mode"
+    },
+    "intervalMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440,
+      "default": 15,
+      "description": "Run every N minutes"
+    },
+    "intervalHours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24,
+      "default": 1,
+      "description": "Run every N hours"
+    },
+    "intervalDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "default": 1,
+      "description": "Run every N days"
+    },
+    "weekdays": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+      },
+      "default": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      "description": "Days of week to run (for weekly mode)"
+    },
+    "monthDay": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31,
+      "default": 1,
+      "description": "Day of month to run (for monthly mode)"
+    },
+    "cronExpression": {
+      "type": "string",
+      "description": "Cron expression (for custom mode, e.g., '0 */6 * * *')"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "Timezone for schedule (e.g., America/New_York, Europe/London)"
+    },
+    "startTime": {
+      "type": "string",
+      "format": "time",
+      "default": "00:00",
+      "description": "Time to start running (HH:MM format)"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable/disable this schedule"
     }
   },
-  "additionalProperties": false
+  "required": ["mode"]
 }
