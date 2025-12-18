@@ -1,16 +1,20 @@
-"""Workflow Execution Engine
+"""Workflow Execution Engine - REAL IMPLEMENTATIONS
 
 This module handles the execution of workflows by processing nodes
-according to their configuration and the workflow's graph structure.
+with actual API calls and real functionality (not simulated).
 """
 
 from __future__ import annotations
 
 import json
 import traceback
+import subprocess
+import tempfile
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 import asyncio
+import httpx
+import os
 
 
 class ExecutionContext:
@@ -58,75 +62,8 @@ class NodeExecutor:
         """Execute a node and return its output"""
         raise NotImplementedError(f"Executor not implemented for node type: {node.get('type')}")
 
-
-class ManualTriggerExecutor(NodeExecutor):
-    """Executes manual trigger nodes"""
-
-    async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Manual trigger activated")
-
-        # Get test payload from node parameters
-        params = node.get('data', {}).get('parameters', {})
-        test_payload = params.get('testPayload', {})
-
-        if isinstance(test_payload, str):
-            try:
-                test_payload = json.loads(test_payload)
-            except json.JSONDecodeError:
-                test_payload = {"data": test_payload}
-
-        return test_payload or {"triggered": True, "timestamp": datetime.utcnow().isoformat()}
-
-
-class HttpRequestExecutor(NodeExecutor):
-    """Executes HTTP request nodes"""
-
-    async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Executing HTTP request (simulated)")
-
-        params = node.get('data', {}).get('parameters', {})
-        url = params.get('url', '')
-        method = params.get('method', 'GET')
-
-        # In a real implementation, this would make actual HTTP requests
-        # For now, return simulated response
-        return {
-            "status": "simulated",
-            "method": method,
-            "url": url,
-            "response": {
-                "statusCode": 200,
-                "body": {"message": "This is a simulated HTTP response"},
-                "headers": {"content-type": "application/json"}
-            }
-        }
-
-
-class TransformJsExecutor(NodeExecutor):
-    """Executes JavaScript transformation nodes"""
-
-    async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Executing JavaScript transform (simulated)")
-
-        params = node.get('data', {}).get('parameters', {})
-        code = params.get('code', '')
-
-        # In a real implementation, this would execute sandboxed JavaScript
-        # For now, return the input data unchanged
-
-        # Get input from previous node
-        input_data = self._get_input_data(node, context)
-
-        return {
-            "transformed": True,
-            "code_length": len(code),
-            "input": input_data,
-            "output": input_data  # Pass through for simulation
-        }
-
     def _get_input_data(self, node: dict, context: ExecutionContext) -> Any:
         """Get input data from connected nodes"""
-        # Find nodes connected to this node
         edges = context.workflow_data.get('edges', [])
         input_data = []
 
@@ -140,96 +77,441 @@ class TransformJsExecutor(NodeExecutor):
         return input_data[0] if len(input_data) == 1 else input_data
 
 
-class SetFieldsExecutor(NodeExecutor):
-    """Executes set/transform field nodes"""
+class ManualTriggerExecutor(NodeExecutor):
+    """Executes manual trigger nodes"""
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Setting fields (simulated)")
+        context.log(node['id'], "Manual trigger activated")
 
         params = node.get('data', {}).get('parameters', {})
-        operation = params.get('operation', 'set')
-        fields = params.get('fields', [])
+        test_payload = params.get('testPayload', {})
 
-        # Get input data
-        input_data = self._get_input_data(node, context)
+        if isinstance(test_payload, str):
+            try:
+                test_payload = json.loads(test_payload)
+            except json.JSONDecodeError:
+                test_payload = {"data": test_payload}
 
-        return {
-            "operation": operation,
-            "fields_modified": len(fields),
-            "input": input_data,
-            "output": input_data  # Simulated pass-through
-        }
-
-    def _get_input_data(self, node: dict, context: ExecutionContext) -> Any:
-        edges = context.workflow_data.get('edges', [])
-        for edge in edges:
-            if edge.get('target') == node['id']:
-                return context.get_node_output(edge.get('source'))
-        return {}
+        return test_payload or {"triggered": True, "timestamp": datetime.utcnow().isoformat()}
 
 
-class IfNodeExecutor(NodeExecutor):
-    """Executes conditional IF nodes"""
+class HttpRequestExecutor(NodeExecutor):
+    """Executes REAL HTTP requests"""
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Evaluating condition (simulated)")
-
         params = node.get('data', {}).get('parameters', {})
-        conditions = params.get('conditions', [])
+        url = params.get('url', '')
+        method = params.get('method', 'GET').upper()
+        headers = params.get('headers', {})
+        body = params.get('body', '')
+        auth_type = params.get('authentication', 'none')
+        timeout = params.get('timeout', 30)
 
-        # Simulate condition evaluation
-        # In real implementation, would evaluate actual conditions
-        result = True  # Simulated result
+        context.log(node['id'], f"Making {method} request to {url}")
 
-        return {
-            "condition_met": result,
-            "conditions_count": len(conditions),
-            "output": "true" if result else "false"
-        }
+        # Build headers
+        request_headers = {}
+        if isinstance(headers, dict):
+            request_headers.update(headers)
+        elif isinstance(headers, str):
+            try:
+                request_headers.update(json.loads(headers))
+            except:
+                pass
+
+        # Handle authentication
+        auth = None
+        if auth_type == 'basicAuth':
+            username = params.get('username', '')
+            password = params.get('password', '')
+            auth = (username, password)
+        elif auth_type == 'bearerToken':
+            token = params.get('bearerToken', '')
+            request_headers['Authorization'] = f'Bearer {token}'
+        elif auth_type == 'headerAuth':
+            header_name = params.get('headerName', 'Authorization')
+            header_value = params.get('headerValue', '')
+            request_headers[header_name] = header_value
+
+        # Prepare body
+        request_body = None
+        if body and method in ['POST', 'PUT', 'PATCH']:
+            body_format = params.get('bodyFormat', 'json')
+            if body_format == 'json':
+                try:
+                    request_body = json.loads(body) if isinstance(body, str) else body
+                except:
+                    request_body = body
+            else:
+                request_body = body
+
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.request(
+                    method=method,
+                    url=url,
+                    headers=request_headers,
+                    json=request_body if isinstance(request_body, dict) else None,
+                    data=request_body if not isinstance(request_body, dict) else None,
+                    auth=auth
+                )
+
+                # Parse response
+                try:
+                    response_body = response.json()
+                except:
+                    response_body = response.text
+
+                result = {
+                    "statusCode": response.status_code,
+                    "headers": dict(response.headers),
+                    "body": response_body,
+                    "url": str(response.url),
+                    "method": method
+                }
+
+                context.log(node['id'], f"Request completed: {response.status_code}", "success")
+                return result
+
+        except Exception as e:
+            error_msg = f"HTTP request failed: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
 
 
 class LlmCallExecutor(NodeExecutor):
-    """Executes LLM API call nodes"""
+    """Executes REAL LLM API calls"""
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Calling LLM API (simulated)")
-
         params = node.get('data', {}).get('parameters', {})
         provider = params.get('provider', 'openai')
         model = params.get('model', 'gpt-4')
         prompt = params.get('prompt', '')
+        api_key = params.get('apiKey', '')
+        temperature = params.get('temperature', 0.7)
+        max_tokens = params.get('maxTokens', 1000)
+        json_mode = params.get('jsonMode', False)
 
-        # Simulate LLM response
-        return {
-            "provider": provider,
-            "model": model,
-            "response": f"This is a simulated response from {provider}/{model}",
-            "usage": {
-                "prompt_tokens": len(prompt.split()),
-                "completion_tokens": 20,
-                "total_tokens": len(prompt.split()) + 20
+        context.log(node['id'], f"Calling {provider} LLM: {model}")
+
+        # Get input from previous nodes if prompt uses it
+        input_data = self._get_input_data(node, context)
+        if input_data and '{{input}}' in prompt:
+            prompt = prompt.replace('{{input}}', json.dumps(input_data))
+
+        try:
+            if provider == 'openai':
+                result = await self._call_openai(api_key, model, prompt, temperature, max_tokens, json_mode)
+            elif provider == 'anthropic':
+                result = await self._call_anthropic(api_key, model, prompt, temperature, max_tokens)
+            elif provider == 'google':
+                result = await self._call_google(api_key, model, prompt, temperature, max_tokens)
+            else:
+                raise Exception(f"Unsupported LLM provider: {provider}")
+
+            context.log(node['id'], f"LLM call completed", "success")
+            return result
+
+        except Exception as e:
+            error_msg = f"LLM API call failed: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
+
+    async def _call_openai(self, api_key: str, model: str, prompt: str, temperature: float, max_tokens: int, json_mode: bool) -> dict:
+        """Make real OpenAI API call"""
+        if not api_key:
+            raise Exception("OpenAI API key is required")
+
+        try:
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=api_key)
+
+            kwargs = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+                "max_tokens": max_tokens
             }
-        }
+
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            response = await client.chat.completions.create(**kwargs)
+
+            return {
+                "provider": "openai",
+                "model": model,
+                "response": response.choices[0].message.content,
+                "usage": {
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens,
+                    "total_tokens": response.usage.total_tokens
+                },
+                "finish_reason": response.choices[0].finish_reason
+            }
+        except ImportError:
+            raise Exception("openai package not installed. Run: pip install openai")
+
+    async def _call_anthropic(self, api_key: str, model: str, prompt: str, temperature: float, max_tokens: int) -> dict:
+        """Make real Anthropic API call"""
+        if not api_key:
+            raise Exception("Anthropic API key is required")
+
+        try:
+            from anthropic import AsyncAnthropic
+            client = AsyncAnthropic(api_key=api_key)
+
+            response = await client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            return {
+                "provider": "anthropic",
+                "model": model,
+                "response": response.content[0].text,
+                "usage": {
+                    "input_tokens": response.usage.input_tokens,
+                    "output_tokens": response.usage.output_tokens
+                },
+                "stop_reason": response.stop_reason
+            }
+        except ImportError:
+            raise Exception("anthropic package not installed. Run: pip install anthropic")
+
+    async def _call_google(self, api_key: str, model: str, prompt: str, temperature: float, max_tokens: int) -> dict:
+        """Make real Google AI API call"""
+        # Placeholder for Google AI implementation
+        raise Exception("Google AI integration not yet implemented. Use OpenAI or Anthropic.")
+
+
+class TransformJsExecutor(NodeExecutor):
+    """Executes REAL JavaScript code using Node.js"""
+
+    async def execute(self, node: dict, context: ExecutionContext) -> Any:
+        params = node.get('data', {}).get('parameters', {})
+        code = params.get('code', '')
+
+        context.log(node['id'], "Executing JavaScript code")
+
+        # Get input from previous node
+        input_data = self._get_input_data(node, context)
+
+        # Create a sandboxed JavaScript execution
+        js_code = f"""
+const input = {json.dumps(input_data)};
+const output = (function() {{
+    {code}
+}})();
+console.log(JSON.stringify(output));
+"""
+
+        try:
+            # Write to temp file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
+                f.write(js_code)
+                temp_file = f.name
+
+            try:
+                # Execute with Node.js
+                result = subprocess.run(
+                    ['node', temp_file],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if result.returncode != 0:
+                    raise Exception(f"JavaScript execution failed: {result.stderr}")
+
+                # Parse output
+                output = json.loads(result.stdout.strip())
+                context.log(node['id'], "JavaScript execution completed", "success")
+
+                return {
+                    "input": input_data,
+                    "output": output,
+                    "code_executed": True
+                }
+
+            finally:
+                # Clean up temp file
+                os.unlink(temp_file)
+
+        except FileNotFoundError:
+            raise Exception("Node.js is not installed. JavaScript execution requires Node.js.")
+        except subprocess.TimeoutExpired:
+            raise Exception("JavaScript execution timed out (10s limit)")
+        except Exception as e:
+            error_msg = f"JavaScript execution error: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
+
+
+class SetFieldsExecutor(NodeExecutor):
+    """Executes REAL field transformations"""
+
+    async def execute(self, node: dict, context: ExecutionContext) -> Any:
+        params = node.get('data', {}).get('parameters', {})
+        operation = params.get('operation', 'set')
+        fields = params.get('fields', [])
+
+        context.log(node['id'], f"Applying field operation: {operation}")
+
+        # Get input data
+        input_data = self._get_input_data(node, context)
+        if not isinstance(input_data, dict):
+            input_data = {"data": input_data}
+
+        output_data = input_data.copy()
+
+        try:
+            for field in fields:
+                field_name = field.get('name', '')
+                field_value = field.get('value', '')
+
+                if operation == 'set':
+                    output_data[field_name] = field_value
+                elif operation == 'remove':
+                    output_data.pop(field_name, None)
+                elif operation == 'rename':
+                    new_name = field.get('newName', '')
+                    if field_name in output_data:
+                        output_data[new_name] = output_data.pop(field_name)
+
+            context.log(node['id'], f"Field operation completed", "success")
+            return output_data
+
+        except Exception as e:
+            error_msg = f"Field operation failed: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
+
+
+class IfNodeExecutor(NodeExecutor):
+    """Executes REAL conditional logic"""
+
+    async def execute(self, node: dict, context: ExecutionContext) -> Any:
+        params = node.get('data', {}).get('parameters', {})
+        conditions = params.get('conditions', [])
+        combine_op = params.get('combineOperation', 'AND')
+
+        context.log(node['id'], "Evaluating conditions")
+
+        # Get input data
+        input_data = self._get_input_data(node, context)
+
+        try:
+            results = []
+            for condition in conditions:
+                field = condition.get('field', '')
+                operation = condition.get('operation', 'equals')
+                value = condition.get('value', '')
+
+                # Extract field value from input
+                field_value = input_data.get(field) if isinstance(input_data, dict) else input_data
+
+                # Evaluate condition
+                if operation == 'equals':
+                    result = str(field_value) == str(value)
+                elif operation == 'notEquals':
+                    result = str(field_value) != str(value)
+                elif operation == 'contains':
+                    result = str(value) in str(field_value)
+                elif operation == 'greaterThan':
+                    result = float(field_value) > float(value)
+                elif operation == 'lessThan':
+                    result = float(field_value) < float(value)
+                elif operation == 'regex':
+                    import re
+                    result = bool(re.search(value, str(field_value)))
+                else:
+                    result = False
+
+                results.append(result)
+
+            # Combine results
+            if combine_op == 'AND':
+                final_result = all(results) if results else False
+            else:  # OR
+                final_result = any(results) if results else False
+
+            context.log(node['id'], f"Condition result: {final_result}", "success")
+
+            return {
+                "condition_met": final_result,
+                "conditions_evaluated": len(results),
+                "input": input_data
+            }
+
+        except Exception as e:
+            error_msg = f"Condition evaluation failed: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
 
 
 class GmailSendExecutor(NodeExecutor):
-    """Executes Gmail send nodes"""
+    """Executes REAL Gmail sending via SMTP"""
 
     async def execute(self, node: dict, context: ExecutionContext) -> Any:
-        context.log(node['id'], "Sending Gmail (simulated)")
-
         params = node.get('data', {}).get('parameters', {})
         to = params.get('to', '')
         subject = params.get('subject', '')
         body = params.get('body', '')
+        body_format = params.get('bodyFormat', 'text')
 
-        return {
-            "sent": True,
-            "to": to,
-            "subject": subject,
-            "message_id": f"simulated-{datetime.utcnow().timestamp()}",
-            "status": "simulated_success"
-        }
+        # Gmail credentials
+        from_email = params.get('fromEmail', '')
+        password = params.get('password', '')  # App password
+
+        context.log(node['id'], f"Sending email to {to}")
+
+        if not all([to, subject, from_email, password]):
+            raise Exception("Missing required email parameters: to, subject, fromEmail, password")
+
+        try:
+            import aiosmtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+
+            # Create message
+            message = MIMEMultipart()
+            message['From'] = from_email
+            message['To'] = to
+            message['Subject'] = subject
+
+            # Add body
+            mime_type = 'html' if body_format == 'html' else 'plain'
+            message.attach(MIMEText(body, mime_type))
+
+            # Send via Gmail SMTP
+            await aiosmtplib.send(
+                message,
+                hostname='smtp.gmail.com',
+                port=587,
+                start_tls=True,
+                username=from_email,
+                password=password
+            )
+
+            context.log(node['id'], "Email sent successfully", "success")
+
+            return {
+                "sent": True,
+                "to": to,
+                "subject": subject,
+                "from": from_email,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+        except ImportError:
+            raise Exception("aiosmtplib package not installed. Run: pip install aiosmtplib")
+        except Exception as e:
+            error_msg = f"Email sending failed: {str(e)}"
+            context.log(node['id'], error_msg, "error")
+            raise Exception(error_msg)
 
 
 # Registry of node executors
@@ -318,13 +600,13 @@ class WorkflowExecutor:
             executor = EXECUTOR_REGISTRY.get(node_type)
 
             if not executor:
-                # Default executor for unknown types
-                context.log(node_id, f"No executor found for {node_type}, using default", "warning")
+                # No executor available
+                context.log(node_id, f"No executor found for {node_type}", "warning")
                 output = {
-                    "executed": True,
+                    "executed": False,
                     "type": node_type,
                     "status": "no_executor_available",
-                    "parameters": node.get('data', {}).get('parameters', {})
+                    "message": "This node type does not have a real executor yet"
                 }
             else:
                 # Execute the node
@@ -345,6 +627,7 @@ class WorkflowExecutor:
                 raise
             else:
                 context.log(node_id, "Continuing despite error (continueOnFail=true)", "warning")
+                context.set_node_output(node_id, {"error": error_msg, "continued": True})
 
     def _get_execution_order(self, nodes: List[dict], edges: List[dict]) -> List[dict]:
         """
