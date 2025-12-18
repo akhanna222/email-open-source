@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
 
 from .schema_registry import registry_payload
+from .executor import workflow_executor
 
 # Path to sample workflows
 SAMPLES_DIR = Path(__file__).resolve().parents[2] / "samples" / "workflows"
@@ -319,3 +320,33 @@ def load_sample_workflow(sample_id: str) -> dict:
             print(f"Error loading sample {sample_file.name}: {e}")
 
     return {"error": "Sample workflow not found"}, 404
+
+
+@app.post("/workflows/{workflow_id}/execute")
+async def execute_workflow(workflow_id: str) -> dict:
+    """
+    Execute a workflow
+
+    This endpoint executes all nodes in the workflow according to their
+    configuration and the workflow's graph structure.
+    """
+    # Load workflow from memory or disk
+    workflow_data = workflows_db.get(workflow_id)
+
+    if not workflow_data:
+        # Try loading from disk
+        workflow_data = load_workflow_from_disk(workflow_id)
+
+    if not workflow_data:
+        return {"error": f"Workflow {workflow_id} not found"}, 404
+
+    try:
+        # Execute the workflow
+        result = await workflow_executor.execute_workflow(workflow_data)
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "workflow_id": workflow_id
+        }
