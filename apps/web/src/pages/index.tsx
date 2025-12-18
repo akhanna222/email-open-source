@@ -23,6 +23,10 @@ export default function Home() {
   const [showSavedWorkflows, setShowSavedWorkflows] = useState(false);
   const [savedWorkflows, setSavedWorkflows] = useState<Workflow[]>([]);
   const [loadingSavedWorkflows, setLoadingSavedWorkflows] = useState(false);
+  const [executing, setExecuting] = useState(false);
+  const [executionResult, setExecutionResult] = useState<any>(null);
+  const [showExecutionResult, setShowExecutionResult] = useState(false);
+  const [availableWorkflows, setAvailableWorkflows] = useState<Workflow[]>([]);
 
   const handleSave = async () => {
     // Validation
@@ -52,6 +56,10 @@ export default function Home() {
         setCurrentVersion(result.version);
       }
 
+      // Refresh workflows dropdown
+      const workflows = await api.getWorkflows();
+      setAvailableWorkflows(workflows);
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -60,6 +68,44 @@ export default function Home() {
       alert(`Failed to save workflow: ${errorMessage}\n\nPlease check that the backend is running.`);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleExecute = async () => {
+    // Validation
+    if (!workflowId) {
+      alert('Please save the workflow before executing');
+      return;
+    }
+
+    if (nodes.length === 0) {
+      alert('Cannot execute an empty workflow. Please add nodes first.');
+      return;
+    }
+
+    setExecuting(true);
+    setExecutionResult(null);
+    try {
+      const result = await api.executeWorkflow(workflowId);
+      setExecutionResult(result);
+      setShowExecutionResult(true);
+
+      if (result.success) {
+        console.log('Execution completed:', result);
+      } else {
+        console.error('Execution failed:', result);
+      }
+    } catch (error) {
+      console.error('Failed to execute workflow:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setExecutionResult({
+        success: false,
+        error: errorMessage,
+        workflow_id: workflowId
+      });
+      setShowExecutionResult(true);
+    } finally {
+      setExecuting(false);
     }
   };
 
@@ -103,6 +149,24 @@ export default function Home() {
     }
   };
 
+  const handleWorkflowSelect = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = event.target.value;
+    if (!selectedId || selectedId === '') return;
+
+    try {
+      const workflow = await api.getWorkflow(selectedId);
+      if (workflow && workflow.nodes) {
+        loadWorkflow(workflow);
+        // Refresh the workflows list
+        const workflows = await api.getWorkflows();
+        setAvailableWorkflows(workflows);
+      }
+    } catch (error) {
+      console.error('Failed to load workflow:', error);
+      alert('Failed to load workflow. Please try again.');
+    }
+  };
+
   const loadSavedWorkflow = async (workflowToLoad: Workflow) => {
     try {
       if (workflowToLoad && workflowToLoad.nodes) {
@@ -117,6 +181,19 @@ export default function Home() {
       alert(`Failed to load workflow: ${errorMessage}`);
     }
   };
+
+  // Load available workflows on mount
+  useEffect(() => {
+    const loadWorkflows = async () => {
+      try {
+        const workflows = await api.getWorkflows();
+        setAvailableWorkflows(workflows);
+      } catch (error) {
+        console.error('Failed to load workflows for dropdown:', error);
+      }
+    };
+    loadWorkflows();
+  }, []);
 
   useEffect(() => {
     if (showSamples && samples.length === 0) {
@@ -204,13 +281,24 @@ export default function Home() {
             <FolderOpen size={18} />
             <span className="font-medium">Samples</span>
           </button>
-          <button
-            onClick={() => setShowSavedWorkflows(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all"
+          <select
+            value={workflowId || ''}
+            onChange={handleWorkflowSelect}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all appearance-none cursor-pointer font-medium min-w-[180px]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: '36px'
+            }}
           >
-            <FolderOpen size={18} />
-            <span className="font-medium">Load Saved</span>
-          </button>
+            <option value="" className="bg-gray-800 text-white">Load Workflow...</option>
+            {availableWorkflows.map((workflow) => (
+              <option key={workflow.id} value={workflow.id} className="bg-gray-800 text-white">
+                {workflow.name}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleSave}
             disabled={saving}
@@ -224,9 +312,17 @@ export default function Home() {
               )}
             </div>
           </button>
-          <button className="flex items-center gap-2 px-5 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all font-medium shadow-lg">
+          <button
+            onClick={handleExecute}
+            disabled={executing || nodes.length === 0}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg transition-all font-medium shadow-lg ${
+              executing || nodes.length === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-white text-blue-600 hover:bg-blue-50'
+            }`}
+          >
             <Play size={18} />
-            Execute
+            {executing ? 'Executing...' : 'Execute'}
           </button>
         </div>
       </header>
@@ -383,6 +479,144 @@ export default function Home() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Execution Result Modal */}
+      {showExecutionResult && executionResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {executionResult.success ? '✅ Execution Completed' : '❌ Execution Failed'}
+              </h2>
+              <button
+                onClick={() => setShowExecutionResult(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-auto p-6">
+              {/* Summary */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-bold text-lg mb-3">Summary</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Workflow ID:</span>
+                    <span className="ml-2 text-gray-600">{executionResult.workflow_id}</span>
+                  </div>
+                  {executionResult.execution_id && (
+                    <div>
+                      <span className="font-medium">Execution ID:</span>
+                      <span className="ml-2 text-gray-600">{executionResult.execution_id}</span>
+                    </div>
+                  )}
+                  {executionResult.duration_seconds !== undefined && (
+                    <div>
+                      <span className="font-medium">Duration:</span>
+                      <span className="ml-2 text-gray-600">{executionResult.duration_seconds.toFixed(2)}s</span>
+                    </div>
+                  )}
+                  {executionResult.nodes_executed !== undefined && (
+                    <div>
+                      <span className="font-medium">Nodes Executed:</span>
+                      <span className="ml-2 text-gray-600">{executionResult.nodes_executed}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Error Display */}
+              {executionResult.error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="font-bold text-lg text-red-700 mb-2">Error</h3>
+                  <p className="text-red-600 font-mono text-sm">{executionResult.error}</p>
+                  {executionResult.traceback && (
+                    <details className="mt-3">
+                      <summary className="cursor-pointer font-medium text-red-700">Show traceback</summary>
+                      <pre className="mt-2 p-3 bg-red-100 rounded text-xs overflow-auto max-h-48">
+                        {executionResult.traceback}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+
+              {/* Execution Logs */}
+              {executionResult.logs && executionResult.logs.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-bold text-lg mb-3">Execution Logs</h3>
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm max-h-64 overflow-auto">
+                    {executionResult.logs.map((log: any, idx: number) => (
+                      <div key={idx} className={`py-1 ${
+                        log.level === 'error' ? 'text-red-400' :
+                        log.level === 'warning' ? 'text-yellow-400' :
+                        log.level === 'success' ? 'text-green-400' :
+                        'text-gray-300'
+                      }`}>
+                        <span className="text-gray-500">[{log.timestamp?.substring(11, 19)}]</span>
+                        <span className="text-blue-400 ml-2">{log.node_id}</span>
+                        <span className="ml-2">{log.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Node Outputs */}
+              {executionResult.outputs && Object.keys(executionResult.outputs).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-bold text-lg mb-3">Node Outputs</h3>
+                  <div className="space-y-3">
+                    {Object.entries(executionResult.outputs).map(([nodeId, output]: [string, any]) => (
+                      <details key={nodeId} className="bg-blue-50 p-3 rounded-lg">
+                        <summary className="cursor-pointer font-medium text-blue-700">
+                          {nodeId}
+                        </summary>
+                        <pre className="mt-2 p-3 bg-white rounded text-xs overflow-auto max-h-48">
+                          {JSON.stringify(output, null, 2)}
+                        </pre>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Errors List */}
+              {executionResult.errors && executionResult.errors.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-bold text-lg mb-3 text-red-700">Errors</h3>
+                  <div className="space-y-3">
+                    {executionResult.errors.map((error: any, idx: number) => (
+                      <div key={idx} className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                        <div className="font-medium text-red-700">Node: {error.node_id}</div>
+                        <div className="text-red-600 mt-1">{error.error}</div>
+                        {error.details && (
+                          <details className="mt-2">
+                            <summary className="cursor-pointer text-sm text-red-700">Details</summary>
+                            <pre className="mt-1 text-xs overflow-auto max-h-32 bg-red-100 p-2 rounded">
+                              {error.details}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowExecutionResult(false)}
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all font-medium shadow-md hover:shadow-lg"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

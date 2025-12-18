@@ -112,4 +112,13 @@ export const api = {
     const data = await response.json();
     return data.workflow;
   },
+
+  // Execute workflow
+  async executeWorkflow(workflowId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.json();
+  },
 };

@@ -1,0 +1,108 @@
+{
+  "id": "sample-test-execution",
+  "name": "Simple Test Workflow (No API Keys Required)",
+  "description": "A basic workflow to test execution without requiring any API keys or credentials. Uses manual trigger, data transformation, and conditional logic.",
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "trigger",
+      "position": { "x": 100, "y": 100 },
+      "data": {
+        "label": "Manual Trigger",
+        "type": "manual_trigger",
+        "parameters": {
+          "testPayload": {
+            "name": "Test User",
+            "score": 85,
+            "email": "test@example.com"
+          }
+        }
+      }
+    },
+    {
+      "id": "transform-1",
+      "type": "utility",
+      "position": { "x": 100, "y": 250 },
+      "data": {
+        "label": "Add Status Field",
+        "type": "set_fields",
+        "parameters": {
+          "operation": "set",
+          "fields": [
+            {
+              "name": "status",
+              "value": "processed"
+            },
+            {
+              "name": "timestamp",
+              "value": "2024-01-01T12:00:00Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "condition-1",
+      "type": "control",
+      "position": { "x": 100, "y": 400 },
+      "data": {
+        "label": "Check Score",
+        "type": "if",
+        "parameters": {
+          "conditions": [
+            {
+              "field": "score",
+              "operation": "greaterThan",
+              "value": "70"
+            }
+          ],
+          "combineOperation": "AND"
+        }
+      }
+    },
+    {
+      "id": "transform-2",
+      "type": "utility",
+      "position": { "x": 100, "y": 550 },
+      "data": {
+        "label": "Mark as Passed",
+        "type": "set_fields",
+        "parameters": {
+          "operation": "set",
+          "fields": [
+            {
+              "name": "result",
+              "value": "PASSED"
+            },
+            {
+              "name": "grade",
+              "value": "A"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "trigger-1",
+      "target": "transform-1"
+    },
+    {
+      "id": "e2",
+      "source": "transform-1",
+      "target": "condition-1"
+    },
+    {
+      "id": "e3",
+      "source": "condition-1",
+      "target": "transform-2"
+    }
+  ],
+  "metadata": {
+    "tags": ["test", "simple", "no-credentials"],
+    "use_case": "Testing workflow execution without API keys",
+    "complexity": "basic"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "sample-test-missing-params",
+  "name": "Test Missing Parameters (Will Show Clear Errors)",
+  "description": "A workflow designed to fail with clear error messages showing what parameters are missing. Use this to test error handling.",
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "type": "trigger",
+      "position": { "x": 100, "y": 100 },
+      "data": {
+        "label": "Manual Trigger",
+        "type": "manual_trigger",
+        "parameters": {
+          "testPayload": {
+            "message": "Testing error handling"
+          }
+        }
+      }
+    },
+    {
+      "id": "http-1",
+      "type": "utility",
+      "position": { "x": 100, "y": 250 },
+      "data": {
+        "label": "HTTP Request (No URL)",
+        "type": "http_request",
+        "parameters": {
+          "method": "GET"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "trigger-1",
+      "target": "http-1"
+    }
+  ],
+  "metadata": {
+    "tags": ["test", "error-handling", "validation"],
+    "use_case": "Testing parameter validation and error messages",
+    "complexity": "basic"
+  }
+}
