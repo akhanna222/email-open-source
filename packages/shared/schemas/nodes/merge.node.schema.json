@@ -1,12 +1,18 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/merge.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Merge Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["mode"],
   "properties": {
-    "mode": { "type": "string", "enum": ["wait_all", "first_wins"], "default": "wait_all" },
-    "x-ui": { "type": "object", "additionalProperties": true }
-  },
-  "additionalProperties": false
+    "mode": {
+      "type": "string",
+      "enum": ["waitAll", "passThrough", "keepOnlyFirstInput", "append"],
+      "default": "waitAll",
+      "description": "Merge strategy"
+    },
+    "clashHandling": {
+      "type": "string",
+      "enum": ["addSuffix", "preferInput1", "preferInput2"],
+      "default": "addSuffix",
+      "description": "How to handle property name conflicts"
+    }
+  }
 }

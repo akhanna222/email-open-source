@@ -1,15 +1,121 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/send_gmail_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Send Gmail Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["to", "subject", "body"],
   "properties": {
-    "to": { "type": "string", "format": "email" },
-    "subject": { "type": "string", "minLength": 1 },
-    "body": { "type": "string", "minLength": 1 },
-    "attachments": { "type": "array", "items": { "type": "string" } },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["OAuth2", "serviceAccount"],
+      "default": "OAuth2",
+      "description": "Authentication method for Gmail API"
+    },
+    "clientId": {
+      "type": "string",
+      "description": "Google OAuth2 Client ID (from Google Cloud Console)",
+      "format": "password"
+    },
+    "clientSecret": {
+      "type": "string",
+      "description": "Google OAuth2 Client Secret",
+      "format": "password"
+    },
+    "accessToken": {
+      "type": "string",
+      "description": "OAuth2 Access Token (generated after authorization)",
+      "format": "password"
+    },
+    "refreshToken": {
+      "type": "string",
+      "description": "OAuth2 Refresh Token (for token renewal)",
+      "format": "password"
+    },
+    "serviceAccountEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Service Account Email (when using service account auth)"
+    },
+    "privateKey": {
+      "type": "string",
+      "description": "Service Account Private Key (JSON format)",
+      "format": "password"
+    },
+    "impersonateEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Email to impersonate (for service accounts with domain-wide delegation)"
+    },
+    "to": {
+      "type": "string",
+      "description": "Recipient email address(es), comma-separated"
+    },
+    "cc": {
+      "type": "string",
+      "description": "CC email address(es), comma-separated"
+    },
+    "bcc": {
+      "type": "string",
+      "description": "BCC email address(es), comma-separated"
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Email subject line"
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Email body content (HTML supported)"
+    },
+    "bodyFormat": {
+      "type": "string",
+      "enum": ["text", "html"],
+      "default": "text",
+      "description": "Email body format"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": { "type": "string" },
+          "content": { "type": "string" },
+          "mimeType": { "type": "string" }
+        }
+      },
+      "description": "Email attachments"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "normal", "high"],
+      "default": "normal",
+      "description": "Email priority"
+    },
+    "replyTo": {
+      "type": "string",
+      "format": "email",
+      "description": "Reply-To email address"
+    },
+    "fromName": {
+      "type": "string",
+      "description": "Sender display name"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authentication": { "const": "OAuth2" } }
+      },
+      "then": {
+        "required": ["clientId", "clientSecret", "to", "subject", "body"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "authentication": { "const": "serviceAccount" } }
+      },
+      "then": {
+        "required": ["serviceAccountEmail", "privateKey", "to", "subject", "body"]
+      }
+    }
+  ]
 }

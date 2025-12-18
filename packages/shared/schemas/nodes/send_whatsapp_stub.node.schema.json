@@ -1,14 +1,63 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/send_whatsapp_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Send WhatsApp Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["to", "message"],
   "properties": {
-    "to": { "type": "string", "pattern": "^\\+[1-9][0-9]{7,14}$" },
-    "message": { "type": "string", "minLength": 1 },
-    "template": { "type": "string" },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["apiKey", "cloudAPI"],
+      "default": "cloudAPI",
+      "description": "WhatsApp Business API authentication method"
+    },
+    "apiKey": {
+      "type": "string",
+      "format": "password",
+      "description": "WhatsApp Business API key"
+    },
+    "phoneNumberId": {
+      "type": "string",
+      "description": "WhatsApp Business Phone Number ID"
+    },
+    "accessToken": {
+      "type": "string",
+      "format": "password",
+      "description": "WhatsApp Cloud API Access Token"
+    },
+    "to": {
+      "type": "string",
+      "description": "Recipient phone number (with country code, e.g., +1234567890)"
+    },
+    "messageType": {
+      "type": "string",
+      "enum": ["text", "template", "image", "document", "audio", "video"],
+      "default": "text",
+      "description": "Type of message to send"
+    },
+    "text": {
+      "type": "string",
+      "description": "Message text content"
+    },
+    "templateName": {
+      "type": "string",
+      "description": "WhatsApp approved template name"
+    },
+    "templateParams": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Template parameter values"
+    },
+    "mediaUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of media file (for image/video/document/audio)"
+    },
+    "caption": {
+      "type": "string",
+      "description": "Caption for media messages"
+    },
+    "filename": {
+      "type": "string",
+      "description": "Filename for document messages"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication", "phoneNumberId", "to", "messageType"]
 }

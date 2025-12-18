@@ -1,13 +1,104 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/gmail_trigger_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Gmail Trigger Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["simulate_interval_seconds"],
   "properties": {
-    "simulate_interval_seconds": { "type": "integer", "minimum": 10 },
-    "sample_payload": { "type": "object", "default": { "subject": "", "from": "", "snippet": "" } },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "authentication": {
+      "type": "string",
+      "enum": ["OAuth2", "serviceAccount"],
+      "default": "OAuth2",
+      "description": "Authentication method for Gmail API"
+    },
+    "clientId": {
+      "type": "string",
+      "description": "Google OAuth2 Client ID (from Google Cloud Console)",
+      "format": "password"
+    },
+    "clientSecret": {
+      "type": "string",
+      "description": "Google OAuth2 Client Secret",
+      "format": "password"
+    },
+    "accessToken": {
+      "type": "string",
+      "description": "OAuth2 Access Token (generated after authorization)",
+      "format": "password"
+    },
+    "refreshToken": {
+      "type": "string",
+      "description": "OAuth2 Refresh Token (for token renewal)",
+      "format": "password"
+    },
+    "serviceAccountEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Service Account Email (when using service account auth)"
+    },
+    "privateKey": {
+      "type": "string",
+      "description": "Service Account Private Key (JSON format)",
+      "format": "password"
+    },
+    "impersonateEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Email to impersonate (for service accounts with domain-wide delegation)"
+    },
+    "pollInterval": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 3600,
+      "default": 300,
+      "description": "How often to check for new emails (in seconds)"
+    },
+    "labelFilter": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Filter by Gmail labels (e.g., INBOX, UNREAD, IMPORTANT)"
+    },
+    "searchQuery": {
+      "type": "string",
+      "description": "Gmail search query (e.g., 'is:unread from:user@example.com')"
+    },
+    "maxResults": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Maximum number of messages to retrieve per poll"
+    },
+    "markAsRead": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically mark messages as read after processing"
+    },
+    "downloadAttachments": {
+      "type": "boolean",
+      "default": false,
+      "description": "Download email attachments"
+    },
+    "includeSpamTrash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include messages from Spam and Trash"
+    }
   },
-  "additionalProperties": false
+  "required": ["authentication", "pollInterval"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "authentication": { "const": "OAuth2" } }
+      },
+      "then": {
+        "required": ["clientId", "clientSecret"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "authentication": { "const": "serviceAccount" } }
+      },
+      "then": {
+        "required": ["serviceAccountEmail", "privateKey"]
+      }
+    }
+  ]
 }

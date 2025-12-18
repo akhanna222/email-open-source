@@ -1,14 +1,46 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/error_handler.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Error Handler Node Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["strategy"],
   "properties": {
-    "strategy": { "type": "string", "enum": ["retry", "notify", "fail"] },
-    "max_attempts": { "type": "integer", "minimum": 1, "maximum": 10, "default": 3 },
-    "notification_channel": { "type": "string" },
-    "x-ui": { "type": "object", "additionalProperties": true }
-  },
-  "additionalProperties": false
+    "strategy": {
+      "type": "string",
+      "enum": ["retry", "notify", "fallback", "ignore"],
+      "default": "retry",
+      "description": "Error handling strategy"
+    },
+    "retryAttempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 3,
+      "description": "Number of retry attempts"
+    },
+    "retryDelay": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 60000,
+      "default": 1000,
+      "description": "Delay between retries (milliseconds)"
+    },
+    "backoffStrategy": {
+      "type": "string",
+      "enum": ["fixed", "exponential", "linear"],
+      "default": "exponential",
+      "description": "Backoff strategy for retries"
+    },
+    "notificationChannel": {
+      "type": "string",
+      "enum": ["email", "slack", "webhook"],
+      "description": "Notification channel for errors"
+    },
+    "notificationRecipients": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recipients for error notifications"
+    },
+    "fallbackValue": {
+      "type": "string",
+      "description": "Fallback value to return on error"
+    }
+  }
 }

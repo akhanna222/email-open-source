@@ -1,13 +1,38 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/telegram_trigger_stub.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Telegram Trigger Stub Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["simulate_interval_seconds"],
   "properties": {
-    "simulate_interval_seconds": { "type": "integer", "minimum": 5 },
-    "bot_name": { "type": "string", "minLength": 1 },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "botToken": {
+      "type": "string",
+      "format": "password",
+      "description": "Telegram Bot API token (from @BotFather)"
+    },
+    "webhookUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public HTTPS URL for webhook (leave empty for polling)"
+    },
+    "pollInterval": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "default": 5,
+      "description": "Polling interval in seconds (only used if webhook not set)"
+    },
+    "allowedUpdates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["message", "edited_message", "channel_post", "callback_query", "inline_query"]
+      },
+      "default": ["message"],
+      "description": "Types of updates to receive"
+    },
+    "downloadAttachments": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically download photos, documents, and other media"
+    }
   },
-  "additionalProperties": false
+  "required": ["botToken"]
 }

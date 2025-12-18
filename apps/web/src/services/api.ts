@@ -30,6 +30,7 @@ export interface NodeSchema {
   description: string;
   inputs: string[];
   outputs: string[];
+  schema?: any; // JSON Schema for node parameters
 }
 
 export interface Workflow {

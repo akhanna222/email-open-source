@@ -1,17 +1,26 @@
 {
-  "$id": "https://yourdomain.dev/schemas/nodes/prompt_template.node.schema.json",
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Prompt Template Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["template"],
   "properties": {
-    "template": { "type": "string", "minLength": 1 },
-    "variables": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "default": []
+    "template": {
+      "type": "string",
+      "description": "Prompt template with {{variable}} placeholders"
     },
-    "x-ui": { "type": "object", "additionalProperties": true }
+    "templateEngine": {
+      "type": "string",
+      "enum": ["mustache", "handlebars", "jinja2"],
+      "default": "mustache",
+      "description": "Template engine to use"
+    },
+    "variables": {
+      "type": "object",
+      "description": "Variable values to inject"
+    },
+    "escapeHtml": {
+      "type": "boolean",
+      "default": false,
+      "description": "Escape HTML in variables"
+    }
   },
-  "additionalProperties": false
+  "required": ["template"]
 }

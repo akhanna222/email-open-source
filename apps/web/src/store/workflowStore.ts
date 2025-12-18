@@ -14,6 +14,7 @@ interface WorkflowState {
   setEdges: (edges: Edge[]) => void;
   addNode: (node: Node) => void;
   updateNode: (nodeId: string, updatedNode: Node) => void;
+  deleteNode: (nodeId: string) => { affectedConnections: number };
   setSelectedNode: (node: Node | null) => void;
   setWorkflowName: (name: string) => void;
   setWorkflowId: (id: string) => void;
@@ -49,6 +50,31 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: get().nodes.map((n) => (n.id === nodeId ? updatedNode : n)),
       selectedNode: get().selectedNode?.id === nodeId ? updatedNode : get().selectedNode,
     });
+  },
+  deleteNode: (nodeId) => {
+    const { nodes, edges, selectedNode } = get();
+
+    // Count affected edges (connections that will be broken)
+    const affectedEdges = edges.filter(
+      (edge) => edge.source === nodeId || edge.target === nodeId
+    );
+    const affectedConnections = affectedEdges.length;
+
+    // Remove the node
+    const newNodes = nodes.filter((n) => n.id !== nodeId);
+
+    // Remove all edges connected to this node
+    const newEdges = edges.filter(
+      (edge) => edge.source !== nodeId && edge.target !== nodeId
+    );
+
+    set({
+      nodes: newNodes,
+      edges: newEdges,
+      selectedNode: selectedNode?.id === nodeId ? null : selectedNode,
+    });
+
+    return { affectedConnections };
   },
   setSelectedNode: (node) => set({ selectedNode: node }),
   setWorkflowName: (name) => set({ workflowName: name }),

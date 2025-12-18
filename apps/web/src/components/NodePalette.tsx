@@ -57,6 +57,16 @@ export default function NodePalette() {
   }, []);
 
   const handleAddNode = (schema: NodeSchema) => {
+    // Initialize parameters with default values from schema
+    const parameters: Record<string, any> = {};
+    if (schema.schema?.properties) {
+      Object.entries(schema.schema.properties).forEach(([key, prop]: [string, any]) => {
+        if (prop.default !== undefined) {
+          parameters[key] = prop.default;
+        }
+      });
+    }
+
     const newNode = {
       id: `${Date.now()}`,
       type: schema.category,
@@ -66,6 +76,8 @@ export default function NodePalette() {
         description: schema.description,
         inputs: schema.inputs,
         outputs: schema.outputs,
+        parameters: parameters, // Store configurable parameters
+        schema: schema.schema, // Store schema for rendering form
       },
       position: {
         x: Math.random() * 400 + 100,
