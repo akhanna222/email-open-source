@@ -26,6 +26,7 @@ export default function Home() {
   const [executing, setExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState<any>(null);
   const [showExecutionResult, setShowExecutionResult] = useState(false);
+  const [availableWorkflows, setAvailableWorkflows] = useState<Workflow[]>([]);
 
   const handleSave = async () => {
     // Validation
@@ -54,6 +55,10 @@ export default function Home() {
       if (result.version) {
         setCurrentVersion(result.version);
       }
+
+      // Refresh workflows dropdown
+      const workflows = await api.getWorkflows();
+      setAvailableWorkflows(workflows);
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -144,6 +149,24 @@ export default function Home() {
     }
   };
 
+  const handleWorkflowSelect = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = event.target.value;
+    if (!selectedId || selectedId === '') return;
+
+    try {
+      const workflow = await api.getWorkflow(selectedId);
+      if (workflow && workflow.nodes) {
+        loadWorkflow(workflow);
+        // Refresh the workflows list
+        const workflows = await api.getWorkflows();
+        setAvailableWorkflows(workflows);
+      }
+    } catch (error) {
+      console.error('Failed to load workflow:', error);
+      alert('Failed to load workflow. Please try again.');
+    }
+  };
+
   const loadSavedWorkflow = async (workflowToLoad: Workflow) => {
     try {
       if (workflowToLoad && workflowToLoad.nodes) {
@@ -158,6 +181,19 @@ export default function Home() {
       alert(`Failed to load workflow: ${errorMessage}`);
     }
   };
+
+  // Load available workflows on mount
+  useEffect(() => {
+    const loadWorkflows = async () => {
+      try {
+        const workflows = await api.getWorkflows();
+        setAvailableWorkflows(workflows);
+      } catch (error) {
+        console.error('Failed to load workflows for dropdown:', error);
+      }
+    };
+    loadWorkflows();
+  }, []);
 
   useEffect(() => {
     if (showSamples && samples.length === 0) {
@@ -245,13 +281,24 @@ export default function Home() {
             <FolderOpen size={18} />
             <span className="font-medium">Samples</span>
           </button>
-          <button
-            onClick={() => setShowSavedWorkflows(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all"
+          <select
+            value={workflowId || ''}
+            onChange={handleWorkflowSelect}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-all appearance-none cursor-pointer font-medium min-w-[180px]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: '36px'
+            }}
           >
-            <FolderOpen size={18} />
-            <span className="font-medium">Load Saved</span>
-          </button>
+            <option value="" className="bg-gray-800 text-white">Load Workflow...</option>
+            {availableWorkflows.map((workflow) => (
+              <option key={workflow.id} value={workflow.id} className="bg-gray-800 text-white">
+                {workflow.name}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleSave}
             disabled={saving}
